@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="100%" height="100%">
+  <defs>
+    <linearGradient id="w-visor-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#A4F924" />
+      <stop offset="50%" stop-color="#92F702" />
+      <stop offset="100%" stop-color="#0BF807" />
+    </linearGradient>
+    <linearGradient id="w-gloss" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.85" />
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.0" />
+    </linearGradient>
+    <linearGradient id="w-armor" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#18333D" />
+      <stop offset="60%" stop-color="#0D1E24" />
+      <stop offset="100%" stop-color="#09161B" />
+    </linearGradient>
+    <filter id="w-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Ambient Welcome Glow -->
+  <g id="glow">
+    <circle cx="110" cy="110" r="70" fill="#92F702" opacity="0.14" filter="url(#w-glow)" />
+    <circle cx="175" cy="90" r="35" fill="#0BF807" opacity="0.22" filter="url(#w-glow)" />
+  </g>
+
+  <!-- Body & Torso -->
+  <g id="body">
+    <path d="M 65 185 L 90 155 L 140 155 L 165 185 L 150 215 L 80 215 Z" fill="url(#w-armor)" stroke="#18333D" stroke-width="2" />
+    <!-- Chest Plate & Triangle Emblem -->
+    <path d="M 85 162 L 145 162 L 135 198 L 95 198 Z" fill="#09161B" stroke="#92F702" stroke-opacity="0.3" stroke-width="1.5" />
+    <polygon points="115,169 128,191 102,191" fill="#050D10" stroke="#18333D" stroke-width="1.5" />
+    <rect x="107" y="180" width="2.5" height="7" rx="1.2" fill="#92F702" />
+    <rect x="113.8" y="174" width="2.5" height="13" rx="1.2" fill="#92F702" />
+    <rect x="120.5" y="179" width="2.5" height="8" rx="1.2" fill="#92F702" />
+  </g>
+
+  <!-- Helmet & Head (Slightly tilted up and cheerful) -->
+  <g id="helmet">
+    <path d="M 78 45 L 142 45 L 168 88 L 152 132 L 132 148 L 86 148 L 66 118 L 76 78 Z" fill="url(#w-armor)" stroke="#1E3E4A" stroke-width="2" />
+    <path d="M 106 40 L 138 40 L 158 72 L 144 72 Z" fill="#92F702" />
+    <polygon points="128,48 142,48 152,64 138,64" fill="#09161B" />
+  </g>
+
+  <!-- Clean Face Mask -->
+  <g id="face-mask">
+    <polygon points="70,104 112,104 106,142 80,142 72,124" fill="#F8F9FA" />
+  </g>
+
+  <!-- Smiling Visor (Curved Bottom for Joyful Expression) -->
+  <g id="visor">
+    <path d="M 58 88 L 140 84 L 134 114 L 62 118 Z" fill="#050D10" stroke="#18333D" stroke-width="2" />
+    <!-- Visor Core with Smiling Arc -->
+    <path d="M 62 91 L 136 87 L 130 110 Q 96 116 66 113 Z" fill="url(#w-visor-grad)" filter="url(#w-glow)" opacity="0.95" />
+    <!-- Happy Visor Eye Arcs -->
+    <path d="M 75 102 Q 88 94 98 102" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" />
+    <path d="M 108 101 Q 120 93 130 101" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" />
+    <!-- Gloss -->
+    <path d="M 64 92 L 134 88 L 132 98 Q 98 103 65 100 Z" fill="url(#w-gloss)" />
+  </g>
+
+  <!-- Waving Cyber Arm & Hand -->
+  <g id="pose-accessories">
+    <!-- Arm -->
+    <path d="M 152 165 L 180 135 L 195 95" fill="none" stroke="#18333D" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M 152 165 L 180 135 L 195 95" fill="none" stroke="#92F702" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+    <!-- Hand Palm Facing Viewer -->
+    <circle cx="195" cy="92" r="14" fill="#0D1E24" stroke="#92F702" stroke-width="2" />
+    <!-- Glowing Palm Node (Greeting) -->
+    <circle cx="195" cy="92" r="6" fill="#92F702" filter="url(#w-glow)" />
+    <!-- Fingers in friendly wave -->
+    <rect x="186" y="70" width="4.5" height="12" rx="2.2" fill="#F8F9FA" />
+    <rect x="193" y="66" width="4.5" height="15" rx="2.2" fill="#F8F9FA" />
+    <rect x="200" y="69" width="4.5" height="13" rx="2.2" fill="#F8F9FA" />
+    <rect x="207" y="75" width="4.5" height="10" rx="2.2" fill="#F8F9FA" />
+    <!-- Waving motion spark lines -->
+    <path d="M 218 68 Q 224 82 220 95" fill="none" stroke="#92F702" stroke-width="2" stroke-linecap="round" opacity="0.75" />
+    <path d="M 226 74 Q 230 84 228 92" fill="none" stroke="#92F702" stroke-width="1.5" stroke-linecap="round" opacity="0.5" />
+  </g>
+</svg>
+
