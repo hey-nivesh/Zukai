@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zukai — 8. Audio Player & Karaoke Transcript</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="screen-common.css">
+  <style>
+    .player-screen {
+      background-color: var(--canvas-abyss);
+      background-image: 
+        radial-gradient(circle at 50% 25%, rgba(146, 247, 2, 0.22) 0%, transparent 55%),
+        radial-gradient(circle at 80% 60%, rgba(11, 248, 7, 0.15) 0%, transparent 50%);
+    }
+
+    .player-artwork-box {
+      width: 220px;
+      height: 220px;
+      border-radius: 28px;
+      background: linear-gradient(135deg, rgba(19, 40, 48, 0.9) 0%, rgba(9, 22, 27, 0.95) 100%);
+      border: 1px solid rgba(146, 247, 2, 0.4);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7), 0 0 24px rgba(146, 247, 2, 0.25);
+      margin: 8px auto 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    /* Waveform Container */
+    .waveform-visualizer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3.5px;
+      height: 36px;
+      margin-bottom: 16px;
+    }
+
+    .bar {
+      width: 3.5px;
+      background: var(--brand-500);
+      border-radius: 2px;
+      animation: soundPulse 1.2s ease-in-out infinite alternate;
+    }
+
+    @keyframes soundPulse {
+      0% { height: 6px; opacity: 0.4; }
+      100% { height: 32px; opacity: 1; }
+    }
+
+    /* Tab Switcher: Transcript vs Chapters */
+    .tab-switch {
+      display: flex;
+      background: rgba(9, 22, 27, 0.8);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-full);
+      padding: 3px;
+      margin-bottom: 16px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-tertiary);
+      border-radius: var(--radius-full);
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn.active {
+      background: var(--canvas-highlight);
+      color: var(--brand-500);
+      border: 1px solid rgba(146, 247, 2, 0.3);
+    }
+
+    /* Karaoke Transcript Active Sentence */
+    .transcript-bubble {
+      background: rgba(13, 30, 36, 0.65);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      font-size: 14px;
+      line-height: 1.6;
+      border: 1px solid var(--glass-border);
+      margin-bottom: 10px;
+    }
+
+    .transcript-bubble.active {
+      border-color: var(--brand-500);
+      background: rgba(146, 247, 2, 0.10);
+      box-shadow: 0 0 16px rgba(146, 247, 2, 0.2);
+    }
+
+    .transcript-bubble.active span.active-word {
+      color: var(--brand-500);
+      font-weight: 700;
+      background: rgba(146, 247, 2, 0.2);
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+
+    /* Scrubber Slider */
+    .scrub-container {
+      margin-bottom: 16px;
+    }
+    .scrub-line {
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.12);
+      position: relative;
+      cursor: pointer;
+    }
+    .scrub-fill {
+      width: 42%;
+      height: 100%;
+      border-radius: 3px;
+      background: linear-gradient(90deg, #A4F924, #92F702);
+      position: relative;
+    }
+    .scrub-thumb {
+      position: absolute;
+      right: -6px;
+      top: -5px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #FFFFFF;
+      box-shadow: 0 0 8px rgba(146, 247, 2, 0.8);
+    }
+
+    /* Controls Row */
+    .controls-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      margin-bottom: 20px;
+    }
+
+    .btn-main-play {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #A4F924 0%, #92F702 100%);
+      color: #09161B;
+      border: none;
+      box-shadow: 0 6px 24px rgba(146, 247, 2, 0.6), inset 0 1.5px 2px rgba(255, 255, 255, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .btn-main-play:active { transform: scale(0.94); }
+  </style>
+</head>
+<body>
+  <div class="phone-viewport player-screen">
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="status-bar-icons">
+        <svg width="16" height="12" viewBox="0 0 24 18" fill="currentColor"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L12 22l7.03-4.39C20.26 16.07 21 14.12 21 12c0-4.97-4.03-9-9-9z"/></svg>
+        <svg width="24" height="12" viewBox="0 0 24 12" fill="currentColor"><rect x="1" y="1" width="19" height="10" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><rect x="3" y="3" width="13" height="6" rx="1.5"/></svg>
+      </div>
+    </div>
+
+    <!-- Player Screen Header -->
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 20px;">
+      <div onclick="window.history.back()" style="cursor: pointer; color: var(--text-secondary);">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div style="text-align: center;">
+        <span style="font-size: 11px; font-weight: 700; color: var(--brand-500); letter-spacing: 1px;">PLAYING FROM LIBRARY</span>
+        <h3 style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Autonomous Systems.pdf</h3>
+      </div>
+      <div style="color: var(--text-secondary); cursor: pointer;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+      </div>
+    </div>
+
+    <!-- Screen Content -->
+    <div class="screen-content" style="padding-bottom: 20px;">
+      <!-- Artwork Box with Mascot Listening (Placeholder Box) -->
+      <div class="player-artwork-box">
+        <div class="mascot-placeholder anim-mascot-float anim-mascot-pulse" style="width: 160px; height: 160px;">
+          <span class="mascot-placeholder-badge">3D PNG ASSET</span>
+          <span class="mascot-placeholder-title">Zuke: Listening</span>
+          <span class="mascot-placeholder-sub">mascot-listening.png (160dp)</span>
+        </div>
+      </div>
+
+      <!-- Title & Language Tag -->
+      <div style="text-align: center; margin-bottom: 12px;">
+        <div style="display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 9999px; background: rgba(146, 247, 2, 0.12); color: var(--brand-500); font-size: 11px; font-weight: 700; margin-bottom: 6px;">
+          <span>HINGLISH</span> &bull; <span>STANDARD DEPTH</span>
+        </div>
+        <h1 style="font-size: 20px; font-weight: 800; letter-spacing: -0.3px;">Chapter 1: Multi-Agent Consensus</h1>
+        <p style="font-size: 13px; color: var(--text-secondary); margin-top: 2px;">Voice: Fenrir &bull; Loudness -16 LUFS</p>
+      </div>
+
+      <!-- Waveform Visualizer -->
+      <div class="waveform-visualizer">
+        <div class="bar" style="animation-delay: 0.1s;"></div>
+        <div class="bar" style="animation-delay: 0.4s;"></div>
+        <div class="bar" style="animation-delay: 0.2s;"></div>
+        <div class="bar" style="animation-delay: 0.6s;"></div>
+        <div class="bar" style="animation-delay: 0.3s;"></div>
+        <div class="bar" style="animation-delay: 0.5s;"></div>
+        <div class="bar" style="animation-delay: 0.2s;"></div>
+        <div class="bar" style="animation-delay: 0.7s;"></div>
+        <div class="bar" style="animation-delay: 0.1s;"></div>
+        <div class="bar" style="animation-delay: 0.4s;"></div>
+      </div>
+
+      <!-- Scrubber -->
+      <div class="scrub-container">
+        <div class="scrub-line">
+          <div class="scrub-fill">
+            <div class="scrub-thumb"></div>
+          </div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 12px; color: var(--text-tertiary); margin-top: 6px;">
+          <span>04:12</span>
+          <span>10:05</span>
+        </div>
+      </div>
+
+      <!-- Main Audio Controls -->
+      <div class="controls-row">
+        <!-- Speed Pill -->
+        <div style="padding: 6px 12px; border-radius: 9999px; background: rgba(255, 255, 255, 0.08); font-size: 13px; font-weight: 600; color: var(--text-primary); cursor: pointer;">
+          1.25x
+        </div>
+
+        <!-- Skip Backward 15s -->
+        <button style="background: none; border: none; color: var(--text-primary); cursor: pointer;">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><text x="9" y="15" font-size="7" fill="currentColor" font-weight="700">15</text></svg>
+        </button>
+
+        <!-- Big Shiny Play / Pause -->
+        <button class="btn-main-play">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
+        </button>
+
+        <!-- Skip Forward 15s -->
+        <button style="background: none; border: none; color: var(--text-primary); cursor: pointer;">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><text x="9" y="15" font-size="7" fill="currentColor" font-weight="700">15</text></svg>
+        </button>
+
+        <!-- Sleep Timer -->
+        <div style="padding: 6px 10px; border-radius: 9999px; background: rgba(255, 255, 255, 0.08); font-size: 12px; color: var(--text-tertiary); cursor: pointer;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+      </div>
+
+      <!-- Transcript vs Chapters Toggle -->
+      <div class="tab-switch">
+        <div class="tab-btn active" id="tab-tr" onclick="setTab('tr')">Interactive Transcript</div>
+        <div class="tab-btn" id="tab-ch" onclick="setTab('ch')">Chapters (3)</div>
+      </div>
+
+      <!-- Karaoke Transcript Box -->
+      <div id="view-tr">
+        <div class="transcript-bubble active">
+          <span style="font-size: 11px; font-weight: 700; color: var(--brand-500); font-family: var(--font-mono); display: block; margin-bottom: 2px;">04:08</span>
+          &ldquo;Seedhi baat yeh hai: jaise hi network latency badhti hai, <span class="active-word">auto-scaling cluster</span> turant backup nodes ko trigger kar deta hai.&rdquo;
+        </div>
+        <div class="transcript-bubble" style="opacity: 0.6;">
+          <span style="font-size: 11px; font-weight: 700; color: var(--text-tertiary); font-family: var(--font-mono); display: block; margin-bottom: 2px;">04:22</span>
+          &ldquo;Matlab agar do servers offline bhi chale jayein, toh consensus kabhi break nahi hoga.&rdquo;
+        </div>
+      </div>
+    </div>
+
+    <div class="home-indicator"></div>
+  </div>
+
+  <script>
+    function setTab(mode) {
+      document.getElementById('tab-tr').classList.toggle('active', mode === 'tr');
+      document.getElementById('tab-ch').classList.toggle('active', mode === 'ch');
+    }
+  </script>
+</body>
+</html>

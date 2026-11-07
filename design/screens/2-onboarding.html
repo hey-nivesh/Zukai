@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zukai — 2. Onboarding Carousel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="screen-common.css">
+  <style>
+    .onboarding-screen {
+      background-image: 
+        radial-gradient(circle at 85% 15%, rgba(146, 247, 2, 0.18) 0%, transparent 45%),
+        radial-gradient(circle at 15% 60%, rgba(11, 248, 7, 0.14) 0%, transparent 40%);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 0 0 24px;
+    }
+
+    .slide-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px 28px;
+    }
+
+    .mascot-stage {
+      width: 220px;
+      height: 220px;
+      margin-bottom: 24px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mascot-stage::after {
+      content: "";
+      position: absolute;
+      width: 140px;
+      height: 140px;
+      background: radial-gradient(circle, rgba(146, 247, 2, 0.25) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .slide-title {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.6px;
+      line-height: 1.25;
+      margin-bottom: 12px;
+      background: linear-gradient(180deg, #FFFFFF 0%, #E2E8F0 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .slide-desc {
+      font-size: 15px;
+      color: var(--text-secondary);
+      line-height: 1.55;
+      max-width: 320px;
+    }
+
+    /* Carousel Pagination */
+    .pagination-bar {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.2);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .dot.active {
+      width: 28px;
+      background: var(--brand-500);
+      box-shadow: 0 0 10px rgba(146, 247, 2, 0.5);
+    }
+
+    .action-container {
+      padding: 0 24px;
+    }
+  </style>
+</head>
+<body>
+  <div class="phone-viewport onboarding-screen">
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="status-bar-icons">
+        <svg width="16" height="12" viewBox="0 0 24 18" fill="currentColor"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L12 22l7.03-4.39C20.26 16.07 21 14.12 21 12c0-4.97-4.03-9-9-9z"/></svg>
+        <svg width="24" height="12" viewBox="0 0 24 12" fill="currentColor"><rect x="1" y="1" width="19" height="10" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><rect x="3" y="3" width="13" height="6" rx="1.5"/></svg>
+      </div>
+    </div>
+
+    <!-- Interactive Slide Carousel Area -->
+    <div class="slide-wrapper" id="slide-box">
+      <!-- Mascot Stage (Placeholder Box Specification) -->
+      <div class="mascot-stage">
+        <div class="mascot-placeholder anim-mascot-float anim-mascot-pulse" style="width: 170px; height: 170px;">
+          <span class="mascot-placeholder-badge">3D PNG ASSET</span>
+          <span class="mascot-placeholder-title" id="mascot-label">Zuke: Welcome</span>
+          <span class="mascot-placeholder-sub" id="mascot-file">mascot-welcome.png (180dp)</span>
+        </div>
+      </div>
+
+      <h2 class="slide-title" id="slide-title">Turn Any Document Into Spoken Clarity</h2>
+      <p class="slide-desc" id="slide-desc">
+        Upload PDFs, slide decks, and memos. Zukai distills them into intuitive audio explanations for your daily commute.
+      </p>
+    </div>
+
+    <!-- Pagination & CTA -->
+    <div class="action-container">
+      <div class="pagination-bar">
+        <div class="dot active" onclick="setSlide(0)"></div>
+        <div class="dot" onclick="setSlide(1)"></div>
+        <div class="dot" onclick="setSlide(2)"></div>
+      </div>
+
+      <button class="btn btn-primary btn-lg" onclick="nextSlide()" style="margin-bottom: 12px;">
+        <span class="shimmer-bar"></span>
+        <span id="btn-text">Continue</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+
+      <div style="text-align: center; margin-bottom: 16px;">
+        <a href="3-auth.html" style="font-size: 14px; font-weight: 500; color: var(--text-tertiary); text-decoration: none;">Skip to Sign In</a>
+      </div>
+    </div>
+
+    <div class="home-indicator"></div>
+  </div>
+
+  <script>
+    const slides = [
+      {
+        title: "Turn Any Document Into Spoken Clarity",
+        desc: "Upload PDFs, slide decks, and memos. Zukai distills them into intuitive audio explanations for your daily commute.",
+        pose: "Zuke: Welcome",
+        file: "mascot-welcome.png (180dp)",
+        btn: "Continue"
+      },
+      {
+        title: "Listen in English or Conversational Hinglish",
+        desc: "Hear complex enterprise ideas explained with intuitive analogies, exactly how tech founders talk over coffee.",
+        pose: "Zuke: Listening",
+        file: "mascot-listening.png (160dp)",
+        btn: "Continue"
+      },
+      {
+        title: "Save 10+ Hours Every Single Week",
+        desc: "Absorb 40-page whitepapers in a 7-minute audio briefing while walking, exercising, or traveling.",
+        pose: "Zuke: Success",
+        file: "mascot-success.png (160dp)",
+        btn: "Get Started Free"
+      }
+    ];
+
+    let current = 0;
+
+    function setSlide(idx) {
+      current = idx;
+      document.getElementById('slide-title').innerText = slides[current].title;
+      document.getElementById('slide-desc').innerText = slides[current].desc;
+      document.getElementById('mascot-label').innerText = slides[current].pose;
+      document.getElementById('mascot-file').innerText = slides[current].file;
+      document.getElementById('btn-text').innerText = slides[current].btn;
+
+      document.querySelectorAll('.dot').forEach((d, i) => {
+        d.classList.toggle('active', i === current);
+      });
+    }
+
+    function nextSlide() {
+      if (current < 2) {
+        setSlide(current + 1);
+      } else {
+        window.location.href = '3-auth.html';
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,337 @@
+/* =========================================================
+   ZUKAI SCREEN MOCKUPS COMMON FRAMEWORK (390 x 844)
+   ========================================================= */
+:root {
+  --brand-500: #92F702;
+  --brand-400: #A4F924;
+  --brand-600: #75CE00;
+  --brand-visor: #0BF807;
+  --canvas-abyss: #050D10;
+  --canvas-base: #09161B;
+  --canvas-surface: #0D1E24;
+  --canvas-raised: #132830;
+  --canvas-highlight: #18333D;
+  --text-primary: #F8F9FA;
+  --text-secondary: #B5C4CC;
+  --text-tertiary: #6B828F;
+  --text-disabled: #3A4B54;
+  --text-inverse: #09161B;
+  --status-success: #00E676;
+  --status-warning: #FFD600;
+  --status-error: #FF3D71;
+  --status-info: #00B0FF;
+  --glass-surface: rgba(15, 31, 38, 0.70);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-glow: rgba(146, 247, 2, 0.35);
+  --font-display: 'Inter', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background-color: #04080B;
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+/* 390 x 844 Phone Frame */
+.phone-viewport {
+  width: 390px;
+  height: 844px;
+  background-color: var(--canvas-base);
+  border-radius: 48px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.8), 0 0 0 10px #131A1E, 0 0 0 12px #2A363D;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Status Bar */
+.status-bar {
+  height: 44px;
+  padding: 12px 28px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  z-index: 50;
+  flex-shrink: 0;
+}
+
+.status-bar-icons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Screen Content Scrollable Container */
+.screen-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 16px 20px 88px;
+  position: relative;
+  z-index: 10;
+  scrollbar-width: none;
+}
+.screen-content::-webkit-scrollbar {
+  display: none;
+}
+
+/* Bottom Tab Navigation Bar */
+.bottom-nav {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: rgba(9, 22, 27, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--glass-border);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 0 12px 16px;
+  z-index: 40;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-tertiary);
+  text-decoration: none;
+  font-size: 11px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.nav-item.active {
+  color: var(--brand-500);
+}
+
+.nav-item.active svg {
+  filter: drop-shadow(0 0 6px rgba(146, 247, 2, 0.6));
+}
+
+/* Glass Card */
+.glass-card {
+  background: var(--glass-surface);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  padding: 18px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  margin-bottom: 16px;
+}
+
+.glass-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+}
+
+/* Shiny Button System */
+.btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  text-decoration: none;
+  user-select: none;
+  overflow: hidden;
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+  border-radius: var(--radius-lg);
+  width: 100%;
+  height: 52px;
+  font-size: 16px;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #A4F924 0%, #92F702 50%, #75CE00 100%);
+  color: #09161B;
+  box-shadow: 0 4px 20px rgba(146, 247, 2, 0.38), inset 0 1px 1px rgba(255, 255, 255, 0.5);
+}
+
+.btn-primary::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 46%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.42) 0%, rgba(255, 255, 255, 0.0) 100%);
+  border-radius: inherit inherit 50% 50%;
+  pointer-events: none;
+}
+
+.btn-primary::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 1px 1.5px rgba(255, 255, 255, 0.35);
+  pointer-events: none;
+}
+
+.shimmer-bar {
+  position: absolute;
+  top: -20%;
+  left: -120%;
+  width: 60%;
+  height: 140%;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.45) 50%, transparent 100%);
+  transform: skewX(-25deg);
+  pointer-events: none;
+  animation: sweep 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes sweep {
+  0% { left: -120%; }
+  30% { left: 220%; }
+  100% { left: 220%; }
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  color: var(--text-primary);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+/* Home Indicator Bar at Bottom */
+.home-indicator {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 134px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+  z-index: 50;
+  pointer-events: none;
+}
+
+/* =========================================================
+   3D MASCOT PLACEHOLDER BOX (Amendment Specification)
+   ========================================================= */
+.mascot-placeholder {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: linear-gradient(135deg, rgba(19, 40, 48, 0.85) 0%, rgba(9, 22, 27, 0.95) 100%);
+  border: 1.5px dashed rgba(146, 247, 2, 0.5);
+  border-radius: 20px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.2);
+  margin: 0 auto;
+  user-select: none;
+}
+
+.mascot-placeholder::before {
+  content: "";
+  position: absolute;
+  width: 80%;
+  height: 80%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(146, 247, 2, 0.25) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.mascot-placeholder-badge {
+  font-size: 10px;
+  font-weight: 800;
+  color: #09161B;
+  background: var(--brand-500);
+  padding: 2px 7px;
+  border-radius: 4px;
+  margin-bottom: 6px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  z-index: 1;
+}
+
+.mascot-placeholder-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+  z-index: 1;
+}
+
+.mascot-placeholder-sub {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-tertiary);
+  z-index: 1;
+}
+
+/* Reanimated Code-Driven Animation Classes */
+.anim-mascot-float {
+  animation: mascotFloat 3.8s ease-in-out infinite;
+}
+
+.anim-mascot-pulse {
+  animation: mascotScalePulse 2.8s ease-in-out infinite;
+}
+
+@keyframes mascotFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
+
+@keyframes mascotScalePulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 6px rgba(146, 247, 2, 0.35));
+  }
+  50% {
+    transform: scale(1.03);
+    filter: drop-shadow(0 0 18px rgba(146, 247, 2, 0.75));
+  }
+}

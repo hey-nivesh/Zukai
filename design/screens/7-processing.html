@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zukai — 7. Processing & Audio Assembly</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="screen-common.css">
+  <style>
+    .processing-screen {
+      background-image: 
+        radial-gradient(circle at 50% 35%, rgba(146, 247, 2, 0.22) 0%, transparent 55%),
+        radial-gradient(circle at 50% 50%, rgba(11, 248, 7, 0.16) 0%, transparent 65%);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding-bottom: 24px;
+    }
+
+    .mascot-orbit-stage {
+      width: 200px;
+      height: 200px;
+      margin: 12px auto 20px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .orbit-anim {
+      animation: floatOrbit 4s ease-in-out infinite;
+    }
+
+    @keyframes floatOrbit {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-8px) scale(1.02); }
+    }
+
+    /* Step Timeline */
+    .step-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 16px;
+      position: relative;
+    }
+
+    .step-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .step-done {
+      background: rgba(0, 230, 118, 0.15);
+      border: 1.5px solid #00E676;
+      color: #00E676;
+    }
+
+    .step-active {
+      background: rgba(146, 247, 2, 0.2);
+      border: 1.5px solid var(--brand-500);
+      color: var(--brand-500);
+      box-shadow: 0 0 14px rgba(146, 247, 2, 0.5);
+    }
+
+    .step-pending {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1.5px solid rgba(255, 255, 255, 0.15);
+      color: var(--text-tertiary);
+    }
+
+    /* Humorous Micro-Tip Box */
+    .tip-box {
+      background: rgba(13, 30, 36, 0.7);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      padding: 14px;
+      text-align: center;
+      margin-top: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="phone-viewport processing-screen">
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="status-bar-icons">
+        <svg width="16" height="12" viewBox="0 0 24 18" fill="currentColor"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L12 22l7.03-4.39C20.26 16.07 21 14.12 21 12c0-4.97-4.03-9-9-9z"/></svg>
+        <svg width="24" height="12" viewBox="0 0 24 12" fill="currentColor"><rect x="1" y="1" width="19" height="10" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><rect x="3" y="3" width="13" height="6" rx="1.5"/></svg>
+      </div>
+    </div>
+
+    <!-- Screen Content -->
+    <div class="screen-content">
+      <div style="text-align: center; margin-top: 8px;">
+        <span style="font-size: 11px; font-weight: 700; color: var(--brand-500); letter-spacing: 1.5px; text-transform: uppercase;">ZUKAI AUDIO WORKER</span>
+        <h1 style="font-size: 24px; font-weight: 800; letter-spacing: -0.4px; margin-top: 4px;">Synthesizing Explanation</h1>
+        <p style="font-size: 13px; color: var(--text-secondary); margin-top: 2px;">Autonomous Systems Overview.pdf</p>
+      </div>
+
+      <!-- Mascot Thinking Stage (Placeholder Box) -->
+      <div class="mascot-orbit-stage">
+        <div class="mascot-placeholder anim-mascot-float anim-mascot-pulse" style="width: 150px; height: 150px;">
+          <span class="mascot-placeholder-badge">3D PNG ASSET</span>
+          <span class="mascot-placeholder-title">Zuke: Thinking</span>
+          <span class="mascot-placeholder-sub">mascot-thinking.png (200dp)</span>
+        </div>
+      </div>
+
+      <!-- Live Pipeline Steps -->
+      <div class="glass-card" style="padding: 20px;">
+        <!-- Step 1: Extracted -->
+        <div class="step-item">
+          <div class="step-icon step-done">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div>
+            <h4 style="font-size: 14px; font-weight: 600; color: var(--text-primary);">Document Parsed & Outlined</h4>
+            <span style="font-size: 11px; color: #00E676;">18 pages extracted &bull; 0.4s</span>
+          </div>
+        </div>
+
+        <!-- Step 2: Active Synthesis -->
+        <div class="step-item">
+          <div class="step-icon step-active">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          </div>
+          <div>
+            <h4 style="font-size: 14px; font-weight: 600; color: var(--brand-500);">Drafting Hinglish Analogies</h4>
+            <span style="font-size: 11px; color: var(--text-tertiary);">Rewriting for natural ear comprehension...</span>
+          </div>
+        </div>
+
+        <!-- Step 3: Pending TTS -->
+        <div class="step-item" style="margin-bottom: 0;">
+          <div class="step-icon step-pending">3</div>
+          <div>
+            <h4 style="font-size: 14px; font-weight: 500; color: var(--text-tertiary);">Neural Audio Assembly & Stitching</h4>
+            <span style="font-size: 11px; color: var(--text-disabled);">Gemini TTS 128 kbps AAC</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Witty Mascot Tip Box -->
+      <div class="tip-box">
+        <p style="font-size: 13px; color: var(--brand-500); font-weight: 600; margin-bottom: 2px;">Zuke's Quick Take</p>
+        <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.4;">
+          &ldquo;Filtering through 18 pages of academic jargon so you can understand it like a 5-minute coffee chat.&rdquo;
+        </p>
+      </div>
+
+      <!-- Simulation Button -->
+      <button class="btn btn-primary" onclick="window.location.href='8-player.html'" style="margin-top: 16px;">
+        <span class="shimmer-bar"></span>
+        <span>Audio Ready! Open Player &rarr;</span>
+      </button>
+    </div>
+
+    <div class="home-indicator"></div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zukai — 12. Settings & Profile</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="screen-common.css">
+  <style>
+    .settings-screen {
+      background-image: 
+        radial-gradient(circle at 80% 15%, rgba(146, 247, 2, 0.10) 0%, transparent 40%),
+        radial-gradient(circle at 15% 70%, rgba(11, 248, 7, 0.08) 0%, transparent 40%);
+    }
+
+    .settings-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      cursor: pointer;
+    }
+    .settings-row:last-child {
+      border-bottom: none;
+    }
+
+    .settings-label {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .settings-val {
+      font-size: 13px;
+      color: var(--brand-500);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="phone-viewport settings-screen">
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="status-bar-icons">
+        <svg width="16" height="12" viewBox="0 0 24 18" fill="currentColor"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L12 22l7.03-4.39C20.26 16.07 21 14.12 21 12c0-4.97-4.03-9-9-9z"/></svg>
+        <svg width="24" height="12" viewBox="0 0 24 12" fill="currentColor"><rect x="1" y="1" width="19" height="10" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><rect x="3" y="3" width="13" height="6" rx="1.5"/></svg>
+      </div>
+    </div>
+
+    <!-- Screen Content -->
+    <div class="screen-content" style="padding-bottom: 24px;">
+      <div style="margin: 8px 0 20px;">
+        <h1 style="font-size: 28px; font-weight: 800; letter-spacing: -0.5px;">Settings</h1>
+      </div>
+
+      <!-- Profile Header Card -->
+      <div class="glass-card" style="display: flex; align-items: center; gap: 16px; padding: 18px;">
+        <div style="width: 54px; height: 54px; border-radius: 50%; background: var(--canvas-highlight); border: 2px solid var(--brand-500); display: flex; align-items: center; justify-content: center; overflow: hidden;">
+          <span style="font-size: 18px; font-weight: 800; color: var(--brand-500);">AD</span>
+        </div>
+        <div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <h3 style="font-size: 17px; font-weight: 700;">Aryan Deshmukh</h3>
+            <span style="font-size: 10px; font-weight: 800; background: var(--brand-500); color: #09161B; padding: 2px 6px; border-radius: 4px;">PRO</span>
+          </div>
+          <p style="font-size: 12px; color: var(--text-tertiary); margin-top: 2px;">aryan.d@tier1-eng.edu</p>
+        </div>
+      </div>
+
+      <!-- Section: Preferences -->
+      <h3 style="font-size: 14px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin: 20px 0 8px;">Audio Preferences</h3>
+      <div class="glass-card" style="padding: 4px 18px;">
+        <div class="settings-row" onclick="window.location.href='4-language.html'">
+          <span class="settings-label">Default Explanation Language</span>
+          <span class="settings-val">Hinglish &rarr;</span>
+        </div>
+        <div class="settings-row">
+          <span class="settings-label">Default Playback Speed</span>
+          <span class="settings-val">1.25x &rarr;</span>
+        </div>
+        <div class="settings-row">
+          <span class="settings-label">Neural Voice Model</span>
+          <span class="settings-val">Fenrir (Male) &rarr;</span>
+        </div>
+      </div>
+
+      <!-- Section: Multi-Tenancy Workspace -->
+      <h3 style="font-size: 14px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin: 20px 0 8px;">Workspace & Team</h3>
+      <div class="glass-card" style="padding: 4px 18px;">
+        <div class="settings-row">
+          <div>
+            <span class="settings-label">Active Workspace</span>
+            <p style="font-size: 11px; color: var(--text-tertiary);">Personal Workspace (Owner)</p>
+          </div>
+          <span class="settings-val">Switch &rarr;</span>
+        </div>
+        <div class="settings-row">
+          <span class="settings-label">Invite Team Members</span>
+          <span class="settings-val">+ Invite</span>
+        </div>
+      </div>
+
+      <!-- Section: Storage & Cache -->
+      <h3 style="font-size: 14px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin: 20px 0 8px;">Storage & Data</h3>
+      <div class="glass-card" style="padding: 4px 18px;">
+        <div class="settings-row">
+          <div>
+            <span class="settings-label">Offline Audio Cache</span>
+            <p style="font-size: 11px; color: var(--text-tertiary);">142 MB cached on device</p>
+          </div>
+          <span style="font-size: 12px; color: #FF3D71; font-weight: 600;">Clear</span>
+        </div>
+      </div>
+
+      <!-- Sign Out -->
+      <button class="btn btn-secondary" onclick="window.location.href='3-auth.html'" style="margin-top: 16px; border-color: rgba(255, 61, 113, 0.4); color: #FF5E8A;">
+        <span>Sign Out of Zukai</span>
+      </button>
+    </div>
+
+    <!-- Bottom Nav -->
+    <nav class="bottom-nav">
+      <div class="nav-item" onclick="window.location.href='5-home.html'">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+        <span>Home</span>
+      </div>
+      <div class="nav-item" onclick="window.location.href='9-library.html'">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        <span>Library</span>
+      </div>
+      <div class="nav-item" onclick="window.location.href='11-paywall.html'">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+        <span>Pro</span>
+      </div>
+      <div class="nav-item active">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span>Settings</span>
+      </div>
+    </nav>
+
+    <div class="home-indicator"></div>
+  </div>
+</body>
+</html>

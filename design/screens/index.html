@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zukai — High-Fidelity Mobile Screen Mockup Gallery</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --brand-500: #92F702;
+      --brand-visor: #0BF807;
+      --canvas-abyss: #050D10;
+      --canvas-base: #09161B;
+      --canvas-surface: #0D1E24;
+      --canvas-raised: #132830;
+      --text-primary: #F8F9FA;
+      --text-secondary: #B5C4CC;
+      --text-tertiary: #6B828F;
+      --glass-surface: rgba(15, 31, 38, 0.70);
+      --glass-border: rgba(255, 255, 255, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--canvas-abyss);
+      color: var(--text-primary);
+      font-family: 'Inter', -apple-system, sans-serif;
+      min-height: 100vh;
+      padding: 48px 24px 80px;
+      background-image: 
+        radial-gradient(circle at 10% 10%, rgba(146, 247, 2, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 85% 60%, rgba(11, 248, 7, 0.10) 0%, transparent 45%);
+      background-attachment: fixed;
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .brand-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      border-radius: 9999px;
+      background: rgba(146, 247, 2, 0.12);
+      border: 1px solid rgba(146, 247, 2, 0.35);
+      color: var(--brand-500);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      font-size: 42px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      margin-bottom: 12px;
+      background: linear-gradient(180deg, #FFFFFF 0%, #B5C4CC 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    p.subtitle {
+      font-size: 17px;
+      color: var(--text-secondary);
+      max-width: 640px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* Screen Flow Diagram Bar */
+    .flow-nav-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      overflow-x: auto;
+      padding: 16px 20px;
+      background: var(--glass-surface);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      margin-bottom: 48px;
+      scrollbar-width: thin;
+    }
+
+    .flow-node {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--glass-border);
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .flow-node:hover {
+      border-color: var(--brand-500);
+      color: var(--brand-500);
+      background: rgba(146, 247, 2, 0.1);
+    }
+
+    .flow-arrow {
+      color: var(--text-tertiary);
+      font-size: 14px;
+    }
+
+    /* Screen Grid */
+    .screen-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 32px;
+    }
+
+    .screen-card {
+      background: var(--glass-surface);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+    }
+
+    .screen-card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(146, 247, 2, 0.45);
+      box-shadow: 0 18px 48px rgba(0, 0, 0, 0.6), 0 0 24px rgba(146, 247, 2, 0.2);
+    }
+
+    .card-preview {
+      width: 100%;
+      height: 380px;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: #050D10;
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .card-preview iframe {
+      width: 390px;
+      height: 844px;
+      transform: scale(0.45);
+      transform-origin: top left;
+      border: none;
+      pointer-events: none;
+    }
+
+    .screen-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--brand-500);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+
+    .screen-name {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .screen-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-bottom: 18px;
+      flex: 1;
+    }
+
+    .open-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: var(--text-primary);
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .open-btn:hover {
+      background: var(--brand-500);
+      color: #09161B;
+      border-color: var(--brand-500);
+      box-shadow: 0 0 16px rgba(146, 247, 2, 0.4);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand-pill">Phase 1 Design Deliverables</div>
+      <h1>Zukai Screen Mockup Gallery</h1>
+      <p class="subtitle">
+        13 high-fidelity mobile screens rendered in a standard 390x844 phone frame. Complete with Apple-like typography, ambient mesh gradients, layered shiny buttons, and 3D mascot placeholder specifications (PNG assets rendered via expo-image + Reanimated code animations).
+      </p>
+    </header>
+
+    <!-- Linear Flow View Bar -->
+    <div class="flow-nav-bar">
+      <a href="1-splash.html" class="flow-node">1. Splash</a>
+      <span class="flow-arrow">&rarr;</span>
+      <a href="2-onboarding.html" class="flow-node">2. Onboarding</a>
+      <span class="flow-arrow">&rarr;</span>
+      <a href="3-auth.html" class="flow-node">3. Auth</a>
+      <span class="flow-arrow">&rarr;</span>
+      <a href="4-language.html" class="flow-node">4. Language</a>
+      <span class="flow-arrow">&rarr;</span>
+      <a href="5-home.html" class="flow-node">5. Home</a>
+      <span class="flow-arrow">&rarr;</span>
+      <a href="6-upload.html" class="flow-node">6. Upload</a>
+      <span class="flow-arrow">&rarr;</span>
+      <a href="7-processing.html" class="flow-node">7. Processing</a>
+      <span class="flow-arrow">&rarr;</span>
+      <a href="8-player.html" class="flow-node">8. Player</a>
+      <span class="flow-arrow">&rarr;</span>
+      <a href="9-library.html" class="flow-node">9. Library</a>
+      <span class="flow-arrow">&rarr;</span>
+      <a href="10-document-detail.html" class="flow-node">10. Detail</a>
+      <span class="flow-arrow">&rarr;</span>
+      <a href="11-paywall.html" class="flow-node">11. Paywall</a>
+      <span class="flow-arrow">&rarr;</span>
+      <a href="12-settings.html" class="flow-node">12. Settings</a>
+      <span class="flow-arrow">&rarr;</span>
+      <a href="13-empty-error.html" class="flow-node">13. States</a>
+    </div>
+
+    <!-- Screen Grid -->
+    <div class="screen-grid">
+      <!-- 1. Splash -->
+      <div class="screen-card">
+        <div class="card-preview">
+          <iframe src="1-splash.html"></iframe>
+        </div>
+        <div class="screen-num">Screen 01</div>
+        <div class="screen-name">Splash Screen</div>
+        <p class="screen-desc">Cold start boot screen with pulsing neon visor aura and wordmark.</p>
+        <a href="1-splash.html" class="open-btn" target="_blank">Open Full Screen &rarr;</a>
+      </div>
+
+      <!-- 2. Onboarding -->
+      <div class="screen-card">
+        <div class="card-preview">
+          <iframe src="2-onboarding.html"></iframe>
+        </div>
+        <div class="screen-num">Screen 02</div>
+        <div class="screen-name">Onboarding Tour</div>
+        <p class="screen-desc">3-slide interactive tour with mascot poses (Welcome, Listening, Success) and value proposition.</p>
+        <a href="2-onboarding.html" class="open-btn" target="_blank">Open Full Screen &rarr;</a>
+      </div>
+
+      <!-- 3. Auth -->
+      <div class="screen-card">
+        <div class="card-preview">
+          <iframe src="3-auth.html"></iframe>
+        </div>
+        <div class="screen-num">Screen 03</div>
+        <div class="screen-name">Sign In & Authentication</div>
+        <p class="screen-desc">Google 1-Tap sign-in, email OTP verification, glassmorphic card, and Zuke-Welcome.</p>
+        <a href="3-auth.html" class="open-btn" target="_blank">Open Full Screen &rarr;</a>
+      </div>
+
+      <!-- 4. Language -->
+      <div class="screen-card">
+        <div class="card-preview">
+          <iframe src="4-language.html"></iframe>
+        </div>
+        <div class="screen-num">Screen 04</div>
+        <div class="screen-name">Language Selection</div>
+        <p class="screen-desc">Choice between English and conversational Romanized Hinglish with real audio script previews.</p>
+        <a href="4-language.html" class="open-btn" target="_blank">Open Full Screen &rarr;</a>
+      </div>
+
+      <!-- 5. Home -->
+      <div class="screen-card">
+        <div class="card-preview">
+          <iframe src="5-home.html"></iframe>
+        </div>
+        <div class="screen-num">Screen 05</div>
+        <div class="screen-name">Dashboard & Home Feed</div>
+        <p class="screen-desc">Reading time stats, hero "Continue Listening" player card, processing job banner, and FAB.</p>
+        <a href="5-home.html" class="open-btn" target="_blank">Open Full Screen &rarr;</a>
+      </div>
+
+      <!-- 6. Upload -->
+      <div class="screen-card">
+        <div class="card-preview">
+          <iframe src="6-upload.html"></iframe>
+        </div>
+        <div class="screen-num">Screen 06</div>
+        <div class="screen-name">Upload & Configure</div>
+        <p class="screen-desc">Multi-format file picker, depth mode chips (Quick, Standard, Deep Dive), voice preset, Zuke-Uploading.</p>
+        <a href="6-upload.html" class="open-btn" target="_blank">Open Full Screen &rarr;</a>
+      </div>
+
+      <!-- 7. Processing -->
+      <div class="screen-card">
+        <div class="card-preview">
+          <iframe src="7-processing.html"></iframe>
+        </div>
+        <div class="screen-num">Screen 07</div>
+        <div class="screen-name">Real-Time Processing</div>
+        <p class="screen-desc">Zuke-Thinking micro-gravity orbit animation, live step-by-step pipeline status, and witty micro-tips.</p>
+        <a href="7-processing.html" class="open-btn" target="_blank">Open Full Screen &rarr;</a>
+      </div>
+
+      <!-- 8. Player -->
+      <div class="screen-card">
+        <div class="card-preview">
+          <iframe src="8-player.html"></iframe>
+        </div>
+        <div class="screen-num">Screen 08</div>
+        <div class="screen-name">Full Audio Player</div>
+        <p class="screen-desc">Artwork, live equalizer waveform, 15s skip, variable speed pills, and synchronized karaoke transcript.</p>
+        <a href="8-player.html" class="open-btn" target="_blank">Open Full Screen &rarr;</a>
+      </div>
+
+      <!-- 9. Library -->
+      <div class="screen-card">
+        <div class="card-preview">
+          <iframe src="9-library.html"></iframe>
+        </div>
+        <div class="screen-num">Screen 09</div>
+        <div class="screen-name">Library & Search</div>
+        <p class="screen-desc">Search bar, filter pills (Hinglish/English/Depth), track cards with progress and mini-play buttons.</p>
+        <a href="9-library.html" class="open-btn" target="_blank">Open Full Screen &rarr;</a>
+      </div>
+
+      <!-- 10. Detail -->
+      <div class="screen-card">
+        <div class="card-preview">
+          <iframe src="10-document-detail.html"></iframe>
+        </div>
+        <div class="screen-num">Screen 10</div>
+        <div class="screen-name">Document Detail</div>
+        <p class="screen-desc">Document metadata, page/word stats, generated audio episode playlist, reprocess and export actions.</p>
+        <a href="10-document-detail.html" class="open-btn" target="_blank">Open Full Screen &rarr;</a>
+      </div>
+
+      <!-- 11. Paywall -->
+      <div class="screen-card">
+        <div class="card-preview">
+          <iframe src="11-paywall.html"></iframe>
+        </div>
+        <div class="screen-num">Screen 11</div>
+        <div class="screen-name">Zukai Pro Paywall</div>
+        <p class="screen-desc">High-converting luxury gold/neon paywall, annual savings badge, Zuke-Paywall, Google Play Billing.</p>
+        <a href="11-paywall.html" class="open-btn" target="_blank">Open Full Screen &rarr;</a>
+      </div>
+
+      <!-- 12. Settings -->
+      <div class="screen-card">
+        <div class="card-preview">
+          <iframe src="12-settings.html"></iframe>
+        </div>
+        <div class="screen-num">Screen 12</div>
+        <div class="screen-name">Settings & Profile</div>
+        <p class="screen-desc">Profile header, default language & speed settings, multi-tenant workspace switcher, cache clear.</p>
+        <a href="12-settings.html" class="open-btn" target="_blank">Open Full Screen &rarr;</a>
+      </div>
+
+      <!-- 13. Empty & Error States -->
+      <div class="screen-card">
+        <div class="card-preview">
+          <iframe src="13-empty-error.html"></iframe>
+        </div>
+        <div class="screen-num">Screen 13</div>
+        <div class="screen-name">Empty & Error States</div>
+        <p class="screen-desc">Toggleable empty library with Zuke-Empty and parsing error screen with Zuke-Error and retry CTA.</p>
+        <a href="13-empty-error.html" class="open-btn" target="_blank">Open Full Screen &rarr;</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

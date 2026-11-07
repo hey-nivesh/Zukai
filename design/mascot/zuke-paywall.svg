@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="100%" height="100%">
+  <defs>
+    <linearGradient id="p-visor-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFD600" />
+      <stop offset="45%" stop-color="#92F702" />
+      <stop offset="100%" stop-color="#0BF807" />
+    </linearGradient>
+    <linearGradient id="p-gold-key" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFF5A0" />
+      <stop offset="50%" stop-color="#FFD600" />
+      <stop offset="100%" stop-color="#FFA000" />
+    </linearGradient>
+    <linearGradient id="p-armor" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#18333D" />
+      <stop offset="60%" stop-color="#0D1E24" />
+      <stop offset="100%" stop-color="#09161B" />
+    </linearGradient>
+    <filter id="p-glow" x="-25%" y="-25%" width="150%" height="150%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Ambient Luxury VIP Glow (Gold + Neon Volt Green) -->
+  <g id="glow">
+    <circle cx="120" cy="115" r="80" fill="#92F702" opacity="0.15" filter="url(#p-glow)" />
+    <circle cx="180" cy="110" r="45" fill="#FFD600" opacity="0.22" filter="url(#p-glow)" />
+  </g>
+
+  <!-- Body / Torso -->
+  <g id="body">
+    <path d="M 68 185 L 95 155 L 145 155 L 172 185 L 155 215 L 85 215 Z" fill="url(#p-armor)" stroke="#18333D" stroke-width="2" />
+    <!-- Chest Plate & Gold Audio Triangle -->
+    <path d="M 90 162 L 150 162 L 140 198 L 100 198 Z" fill="#09161B" stroke="#FFD600" stroke-opacity="0.5" stroke-width="1.5" />
+    <polygon points="120,169 133,191 107,191" fill="#050D10" stroke="#FFD600" stroke-width="1.5" />
+    <rect x="112" y="180" width="2.5" height="7" rx="1.2" fill="#FFD600" />
+    <rect x="118.8" y="174" width="2.5" height="13" rx="1.2" fill="#FFD600" />
+    <rect x="125.5" y="179" width="2.5" height="8" rx="1.2" fill="#FFD600" />
+  </g>
+
+  <!-- Head & Helmet with Golden Accent Stripe -->
+  <g id="helmet">
+    <path d="M 85 45 L 148 45 L 175 88 L 158 132 L 138 148 L 92 148 L 72 118 L 82 78 Z" fill="url(#p-armor)" stroke="#1E3E4A" stroke-width="2" />
+    <path d="M 112 40 L 145 40 L 165 72 L 150 72 Z" fill="#FFD600" />
+    <polygon points="135,48 148,48 158,64 145,64" fill="#09161B" />
+  </g>
+
+  <!-- Clean Face Mask -->
+  <g id="face-mask">
+    <polygon points="76,104 118,104 112,142 86,142 78,124" fill="#F8F9FA" />
+  </g>
+
+  <!-- Visor with Gold/Neon Crown/Diamond Reflection -->
+  <g id="visor">
+    <path d="M 64 88 L 146 84 L 140 114 L 68 118 Z" fill="#050D10" stroke="#18333D" stroke-width="2" />
+    <path d="M 68 91 L 142 87 L 136 111 L 72 114 Z" fill="url(#p-visor-grad)" filter="url(#p-glow)" opacity="0.95" />
+
+    <!-- Diamond VIP Mark inside Visor -->
+    <polygon points="105,94 113,101 105,108 97,101" fill="#FFFFFF" />
+  </g>
+
+  <!-- Cyber Arm Presenting Glowing Golden Audio Key -->
+  <g id="golden-key-hand" transform="translate(150, 95)">
+    <!-- Arm -->
+    <path d="M -5 75 L 25 50 L 30 20" fill="none" stroke="#18333D" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M -5 75 L 25 50 L 30 20" fill="none" stroke="#FFD600" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+
+    <!-- Cyber Hand holding key -->
+    <circle cx="30" cy="18" r="13" fill="#0D1E24" stroke="#FFD600" stroke-width="2" />
+
+    <!-- Golden Audio Key Asset -->
+    <!-- Key Bow (shaped like Zukai audio triangle) -->
+    <polygon points="30,-12 45,12 15,12" fill="url(#p-gold-key)" stroke="#FFFFFF" stroke-width="1.2" filter="url(#p-glow)" />
+    <!-- Equalizer slots inside key bow -->
+    <rect x="23" y="1" width="2" height="7" rx="1" fill="#09161B" />
+    <rect x="29" y="-4" width="2" height="12" rx="1" fill="#09161B" />
+    <rect x="35" y="1" width="2" height="7" rx="1" fill="#09161B" />
+
+    <!-- Key Shaft -->
+    <rect x="28" y="12" width="4.5" height="24" rx="1" fill="url(#p-gold-key)" />
+    <!-- Key Bit (Equalizer teeth) -->
+    <rect x="32" y="24" width="7" height="3" rx="1" fill="url(#p-gold-key)" />
+    <rect x="32" y="30" width="10" height="3.5" rx="1" fill="url(#p-gold-key)" />
+  </g>
+</svg>

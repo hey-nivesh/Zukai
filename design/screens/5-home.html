@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zukai — 5. Home Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="screen-common.css">
+  <style>
+    .home-screen {
+      background-image: 
+        radial-gradient(circle at 85% 12%, rgba(146, 247, 2, 0.16) 0%, transparent 45%),
+        radial-gradient(circle at 10% 40%, rgba(11, 248, 7, 0.10) 0%, transparent 40%);
+    }
+
+    .home-topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .user-greeting {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .user-title {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.4px;
+    }
+
+    .profile-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--canvas-highlight);
+      border: 1.5px solid var(--brand-500);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    /* Stats Quick Bar */
+    .stats-card {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .stat-box {
+      background: rgba(13, 30, 36, 0.6);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      padding: 14px;
+    }
+
+    .stat-val {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--brand-500);
+      font-family: var(--font-mono);
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      margin-top: 2px;
+    }
+
+    /* Hero Continue Listening Card */
+    .hero-player-card {
+      background: linear-gradient(135deg, rgba(19, 40, 48, 0.85) 0%, rgba(9, 22, 27, 0.95) 100%);
+      border: 1px solid rgba(146, 247, 2, 0.35);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(146, 247, 2, 0.15);
+      border-radius: 20px;
+      padding: 18px;
+      margin-bottom: 24px;
+      position: relative;
+    }
+
+    .badge-live {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--brand-500);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .pulse-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--brand-500);
+      box-shadow: 0 0 8px var(--brand-500);
+    }
+
+    /* Audio Progress Bar */
+    .scrub-track {
+      height: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+      margin: 14px 0 8px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .scrub-progress {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 65%;
+      background: var(--brand-500);
+      border-radius: 2px;
+    }
+
+    /* Floating Action Upload Button */
+    .fab-upload {
+      position: absolute;
+      bottom: 96px;
+      right: 20px;
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #A4F924 0%, #92F702 100%);
+      color: #09161B;
+      border: none;
+      box-shadow: 0 6px 24px rgba(146, 247, 2, 0.6), inset 0 1px 2px rgba(255, 255, 255, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 30;
+      transition: transform 0.2s ease;
+    }
+    .fab-upload:active { transform: scale(0.92); }
+  </style>
+</head>
+<body>
+  <div class="phone-viewport home-screen">
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="status-bar-icons">
+        <svg width="16" height="12" viewBox="0 0 24 18" fill="currentColor"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L12 22l7.03-4.39C20.26 16.07 21 14.12 21 12c0-4.97-4.03-9-9-9z"/></svg>
+        <svg width="24" height="12" viewBox="0 0 24 12" fill="currentColor"><rect x="1" y="1" width="19" height="10" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><rect x="3" y="3" width="13" height="6" rx="1.5"/></svg>
+      </div>
+    </div>
+
+    <!-- Screen Content -->
+    <div class="screen-content">
+      <div class="home-topbar">
+        <div>
+          <p class="user-greeting">Good morning, Aryan</p>
+          <h1 class="user-title">Your Audio Feed</h1>
+        </div>
+        <div class="profile-avatar" onclick="window.location.href='12-settings.html'">
+          <span style="font-size: 13px; font-weight: 800; color: var(--brand-500);">AD</span>
+        </div>
+      </div>
+
+      <!-- Quick Metrics -->
+      <div class="stats-card">
+        <div class="stat-box">
+          <div class="stat-val">4.8h</div>
+          <div class="stat-label">Reading Time Saved</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val">12</div>
+          <div class="stat-label">Docs Explained</div>
+        </div>
+      </div>
+
+      <!-- Hero "Continue Listening" Card -->
+      <div class="hero-player-card">
+        <div class="badge-live">
+          <div class="pulse-dot"></div>
+          <span>Continue Listening &bull; Hinglish</span>
+        </div>
+        <h3 style="font-size: 17px; font-weight: 700; margin-bottom: 4px;">Byzantine Fault Tolerance Simplified</h3>
+        <p style="font-size: 13px; color: var(--text-secondary);">Distributed Systems &bull; Standard Depth (10m)</p>
+
+        <div class="scrub-track">
+          <div class="scrub-progress"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 11px; color: var(--text-tertiary);">
+          <span>06:42</span>
+          <span>10:15</span>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px;">
+          <button class="btn btn-primary" onclick="window.location.href='8-player.html'" style="height: 40px; font-size: 14px; width: auto; padding: 0 20px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+            <span>Resume</span>
+          </button>
+          <span style="font-size: 12px; color: var(--brand-500); font-weight: 600;">Chapter 2 of 3</span>
+        </div>
+      </div>
+
+      <!-- In Progress Processing Banner -->
+      <div class="glass-card" onclick="window.location.href='7-processing.html'" style="cursor: pointer; border-color: rgba(0, 176, 255, 0.4); background: rgba(0, 176, 255, 0.08); display: flex; align-items: center; gap: 14px;">
+        <div class="mascot-placeholder" style="width: 44px; height: 44px; border-radius: 10px; flex-shrink: 0; padding: 2px;">
+          <span style="font-size: 8px; font-weight: 800; color: #00B0FF; text-transform: uppercase;">3D PNG</span>
+          <span style="font-size: 7px; color: var(--text-primary); font-weight: 700;">Thinking</span>
+        </div>
+        <div style="flex: 1;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 14px; font-weight: 700; color: #F8F9FA;">Q3 Earnings Whitepaper.pdf</span>
+            <span style="font-size: 11px; color: #00B0FF; font-weight: 600;">68%</span>
+          </div>
+          <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">Synthesizing script with analogies...</p>
+        </div>
+      </div>
+
+      <!-- Recent Explanations Section -->
+      <div style="display: flex; justify-content: space-between; align-items: baseline; margin: 20px 0 12px;">
+        <h2 style="font-size: 18px; font-weight: 700;">Recent Explanations</h2>
+        <a href="9-library.html" style="font-size: 13px; color: var(--brand-500); text-decoration: none; font-weight: 600;">See All</a>
+      </div>
+
+      <!-- Recent Document 1 -->
+      <div class="glass-card" onclick="window.location.href='10-document-detail.html'" style="cursor: pointer; display: flex; align-items: center; gap: 14px; padding: 14px;">
+        <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(146, 247, 2, 0.12); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#92F702" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <div style="flex: 1; min-width: 0;">
+          <h4 style="font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">mRNA Vaccine Molecular Mechanisms.pdf</h4>
+          <p style="font-size: 12px; color: var(--text-tertiary); margin-top: 2px;">English &bull; 8 min &bull; Listened 2h ago</p>
+        </div>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B828F" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+
+      <!-- Recent Document 2 -->
+      <div class="glass-card" onclick="window.location.href='10-document-detail.html'" style="cursor: pointer; display: flex; align-items: center; gap: 14px; padding: 14px;">
+        <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(0, 176, 255, 0.12); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00B0FF" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <div style="flex: 1; min-width: 0;">
+          <h4 style="font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Enterprise Zero Trust Architecture.docx</h4>
+          <p style="font-size: 12px; color: var(--text-tertiary); margin-top: 2px;">Hinglish &bull; 14 min &bull; Completed</p>
+        </div>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B828F" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+    </div>
+
+    <!-- Floating Upload FAB -->
+    <button class="fab-upload" onclick="window.location.href='6-upload.html'">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+
+    <!-- Bottom Tab Navigation -->
+    <nav class="bottom-nav">
+      <div class="nav-item active">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+        <span>Home</span>
+      </div>
+      <div class="nav-item" onclick="window.location.href='9-library.html'">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        <span>Library</span>
+      </div>
+      <div class="nav-item" onclick="window.location.href='11-paywall.html'">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+        <span>Pro</span>
+      </div>
+      <div class="nav-item" onclick="window.location.href='12-settings.html'">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span>Settings</span>
+      </div>
+    </nav>
+
+    <div class="home-indicator"></div>
+  </div>
+</body>
+</html>

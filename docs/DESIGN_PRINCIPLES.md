@@ -158,18 +158,21 @@ Subtle 2% Monochromatic Noise Grain Overlay (Eliminates color banding on OLED sc
 
 ## 5. Screen-to-Background Gradient & Mascot Mapping
 
-| Screen Route | Primary Background Gradient Recipe | Mascot Asset | Mascot State / Purpose |
+> [!NOTE]
+> **Mascot Format Specification:** All mascot assets are **3D-rendered-style PNG images with transparent backgrounds** rendered using **`expo-image`**. Idle animations (subtle vertical floating, gentle breathing scale, ambient visor/neon glow pulsing) are implemented **entirely in code using `react-native-reanimated`**, ensuring native 60fps performance without SVG or Lottie overhead. Any earlier SVG mascots are concept sketches only. In design mockups and documentation, mascots are represented by structured placeholder boxes labeled with the pose name.
+
+| Screen Route | Primary Background Gradient Recipe | Mascot Asset (3D PNG) | Mascot State / Purpose |
 | :--- | :--- | :--- | :--- |
 | `/splash` | Deep Abyss (`#050D10`) with Center Neon Pulse (`#92F702`, 25% opacity) | Logo Mark | Visor glowing neon sweep |
-| `/onboarding` | Deep Teal Mesh (`#09161B` base, `#0BF807` at top, `#92F702` bottom right) | `Zuke-Welcome` / `Zuke-Listening` | Friendly waving, then wearing headphones |
-| `/(auth)/sign-in` | Subtle Obsidian-Emerald (`#09161B` with top-center teal aura) | `Zuke-Welcome` | Welcoming user at top of login card |
-| `/(tabs)/home` | Dual Mesh (`#09161B`, top-right `#92F702` 10%, bottom-left `#0BF807` 8%) | `Zuke-Listening` | Mini mascot badge in progress widget |
-| `/(tabs)/library`| Neutral Dark (`#09161B` with faint center glow) | `Zuke-Empty` | Illustrated on empty library state |
-| `/upload/picker` | Focused Radial (`#09161B` with center `#92F702` spotlight) | `Zuke-Uploading` | Holding document arrow with visor up |
-| `/upload/processing`| Dynamic Pulse Mesh (Pulsing `#92F702` and `#0BF807` rings) | `Zuke-Thinking` | Animated visor processing data bars |
-| `/player/full` | Immersive Soundscape (`#050D10` with beat-reactive ambient green aura) | `Zuke-Listening` | Sound waves radiating from headphones |
-| `/paywall` | Premium Neon Luxe (`#050D10` with high-intensity `#92F702` 20% glow) | `Zuke-Paywall` | Cyber badge, holding golden audio key |
-| `/error` | Crimson-Obsidian (`#09161B` with muted `#FF3D71` 12% top aura) | `Zuke-Error` | Visor flickering with wrench icon |
+| `/onboarding` | Deep Teal Mesh (`#09161B` base, `#0BF807` at top, `#92F702` bottom right) | `mascot-welcome.png` / `mascot-listening.png` | Friendly waving, then wearing headphones |
+| `/(auth)/sign-in` | Subtle Obsidian-Emerald (`#09161B` with top-center teal aura) | `mascot-welcome.png` | Welcoming user at top of login card |
+| `/(tabs)/home` | Dual Mesh (`#09161B`, top-right `#92F702` 10%, bottom-left `#0BF807` 8%) | `mascot-listening.png` | Mini mascot badge in progress widget |
+| `/(tabs)/library`| Neutral Dark (`#09161B` with faint center glow) | `mascot-empty.png` | Illustrated on empty library state |
+| `/upload/picker` | Focused Radial (`#09161B` with center `#92F702` spotlight) | `mascot-uploading.png` | Holding document arrow with visor up |
+| `/upload/processing`| Dynamic Pulse Mesh (Pulsing `#92F702` and `#0BF807` rings) | `mascot-thinking.png` | Animated visor processing data bars |
+| `/player/full` | Immersive Soundscape (`#050D10` with beat-reactive ambient green aura) | `mascot-listening.png` | Sound waves radiating from headphones |
+| `/paywall` | Premium Neon Luxe (`#050D10` with high-intensity `#92F702` 20% glow) | `mascot-paywall.png` | Cyber badge, holding golden audio key |
+| `/error` | Crimson-Obsidian (`#09161B` with muted `#FF3D71` 12% top aura) | `mascot-error.png` | Visor flickering with wrench icon |
 
 ---
 

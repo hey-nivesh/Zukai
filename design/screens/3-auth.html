@@ -1,0 +1,162 @@
+  <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zukai — 3. Sign In & Authentication</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="screen-common.css">
+  <style>
+    .auth-screen {
+      background-image: 
+        radial-gradient(circle at 50% 12%, rgba(146, 247, 2, 0.16) 0%, transparent 45%),
+        radial-gradient(circle at 10% 70%, rgba(11, 248, 7, 0.12) 0%, transparent 40%);
+    }
+
+    .auth-header {
+      text-align: center;
+      margin-top: 12px;
+      margin-bottom: 24px;
+    }
+
+    .auth-mascot {
+      width: 100px;
+      height: 100px;
+      margin: 0 auto 12px;
+    }
+
+    .auth-title {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.4px;
+      margin-bottom: 6px;
+    }
+
+    .auth-subtitle {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    /* Social Auth Button */
+    .btn-google {
+      background: #FFFFFF;
+      color: #1F2937;
+      font-weight: 600;
+      border: none;
+      border-radius: var(--radius-lg);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+      margin-bottom: 20px;
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      color: var(--text-tertiary);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin: 18px 0;
+    }
+
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .divider span {
+      padding: 0 12px;
+    }
+
+    .otp-group {
+      display: flex;
+      justify-content: space-between;
+      margin: 16px 0 20px;
+    }
+
+    .otp-input {
+      width: 44px;
+      height: 52px;
+      border-radius: var(--radius-md);
+      background: rgba(9, 22, 27, 0.8);
+      border: 1px solid var(--glass-border);
+      color: var(--brand-500);
+      font-family: var(--font-mono);
+      font-size: 22px;
+      font-weight: 700;
+      text-align: center;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .otp-input:focus {
+      border-color: var(--brand-500);
+      box-shadow: 0 0 14px rgba(146, 247, 2, 0.4);
+    }
+  </style>
+</head>
+<body>
+  <div class="phone-viewport auth-screen">
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="status-bar-icons">
+        <svg width="16" height="12" viewBox="0 0 24 18" fill="currentColor"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L12 22l7.03-4.39C20.26 16.07 21 14.12 21 12c0-4.97-4.03-9-9-9z"/></svg>
+        <svg width="24" height="12" viewBox="0 0 24 12" fill="currentColor"><rect x="1" y="1" width="19" height="10" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><rect x="3" y="3" width="13" height="6" rx="1.5"/></svg>
+      </div>
+    </div>
+
+    <div class="screen-content" style="padding-bottom: 24px;">
+      <div class="auth-header">
+        <div class="mascot-placeholder anim-mascot-float" style="width: 104px; height: 104px; margin-bottom: 14px;">
+          <span class="mascot-placeholder-badge">3D PNG</span>
+          <span class="mascot-placeholder-title" style="font-size: 11px;">Zuke: Welcome</span>
+          <span class="mascot-placeholder-sub">180dp</span>
+        </div>
+        <h1 class="auth-title">Welcome to Zukai</h1>
+        <p class="auth-subtitle">Sign in to start listening to your documents</p>
+      </div>
+
+      <!-- Google 1-Tap CTA -->
+      <button class="btn btn-google" onclick="window.location.href='4-language.html'">
+        <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.36 24 12 24z"/><path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 10.03 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.36 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/></svg>
+        <span>Continue with Google</span>
+      </button>
+
+      <div class="divider">
+        <span>or sign in with email</span>
+      </div>
+
+      <!-- Email Card -->
+      <div class="glass-card" style="margin-bottom: 20px;">
+        <label style="font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; display: block;">Work or Personal Email</label>
+        <input type="email" class="input-text" placeholder="name@company.com" value="priya.sharma@consulting.com" style="margin-bottom: 16px; width: 100%; height: 48px; border-radius: 12px; background: rgba(9,22,27,0.7); border: 1px solid var(--glass-border); padding: 0 14px; color: var(--text-primary); font-size: 15px;" />
+
+        <label style="font-size: 13px; font-weight: 600; color: var(--text-secondary); display: block;">6-Digit Verification Code</label>
+        <div class="otp-group">
+          <input class="otp-input" value="8" maxlength="1" />
+          <input class="otp-input" value="3" maxlength="1" />
+          <input class="otp-input" value="9" maxlength="1" />
+          <input class="otp-input" value="1" maxlength="1" />
+          <input class="otp-input" value="4" maxlength="1" />
+          <input class="otp-input" value="6" maxlength="1" />
+        </div>
+
+        <button class="btn btn-primary" onclick="window.location.href='4-language.html'">
+          <span class="shimmer-bar"></span>
+          <span>Verify & Enter</span>
+        </button>
+      </div>
+
+      <p style="font-size: 12px; text-align: center; color: var(--text-tertiary); line-height: 1.5;">
+        By continuing you agree to Zukai's <a href="#" style="color: var(--brand-500); text-decoration: none;">Terms of Service</a> and <a href="#" style="color: var(--brand-500); text-decoration: none;">Privacy Policy</a>. Zero data retention guaranteed.
+      </p>
+    </div>
+
+    <div class="home-indicator"></div>
+  </div>
+</body>
+</html>

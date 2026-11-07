@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="100%" height="100%">
+  <defs>
+    <linearGradient id="s-visor-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#A4F924" />
+      <stop offset="50%" stop-color="#92F702" />
+      <stop offset="100%" stop-color="#0BF807" />
+    </linearGradient>
+    <linearGradient id="s-armor" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#18333D" />
+      <stop offset="60%" stop-color="#0D1E24" />
+      <stop offset="100%" stop-color="#09161B" />
+    </linearGradient>
+    <filter id="s-glow" x="-25%" y="-25%" width="150%" height="150%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Celebration Particles / Confetti -->
+  <g id="confetti">
+    <!-- Star Sparkles -->
+    <path d="M 40 40 L 43 48 L 51 51 L 43 54 L 40 62 L 37 54 L 29 51 L 37 48 Z" fill="#92F702" filter="url(#s-glow)" />
+    <path d="M 200 45 L 202 52 L 209 54 L 202 56 L 200 63 L 198 56 L 191 54 L 198 52 Z" fill="#0BF807" filter="url(#s-glow)" />
+    <path d="M 185 145 L 187 151 L 193 153 L 187 155 L 185 161 L 183 155 L 177 153 L 183 151 Z" fill="#FFFFFF" />
+    <circle cx="35" cy="120" r="3" fill="#92F702" />
+    <circle cx="65" cy="30" r="2.5" fill="#0BF807" />
+    <circle cx="215" cy="115" r="3.5" fill="#92F702" />
+    <rect x="52" y="70" width="5" height="5" rx="1" fill="#92F702" transform="rotate(25 52 70)" />
+    <rect x="175" y="32" width="6" height="6" rx="1.5" fill="#00B0FF" transform="rotate(45 175 32)" />
+    <rect x="25" y="160" width="5" height="5" rx="1" fill="#0BF807" transform="rotate(15 25 160)" />
+  </g>
+
+  <!-- Ambient Glow -->
+  <g id="glow">
+    <circle cx="120" cy="115" r="75" fill="#92F702" opacity="0.16" filter="url(#s-glow)" />
+  </g>
+
+  <!-- Body / Torso -->
+  <g id="body">
+    <path d="M 68 185 L 95 155 L 145 155 L 172 185 L 155 215 L 85 215 Z" fill="url(#s-armor)" stroke="#18333D" stroke-width="2" />
+    <!-- Chest Plate & Emblem -->
+    <path d="M 90 162 L 150 162 L 140 198 L 100 198 Z" fill="#09161B" stroke="#92F702" stroke-opacity="0.3" stroke-width="1.5" />
+    <polygon points="120,169 133,191 107,191" fill="#050D10" stroke="#18333D" stroke-width="1.5" />
+    <rect x="112" y="180" width="2.5" height="7" rx="1.2" fill="#92F702" />
+    <rect x="118.8" y="174" width="2.5" height="13" rx="1.2" fill="#92F702" />
+    <rect x="125.5" y="179" width="2.5" height="8" rx="1.2" fill="#92F702" />
+  </g>
+
+  <!-- Head & Helmet -->
+  <g id="helmet">
+    <path d="M 85 45 L 148 45 L 175 88 L 158 132 L 138 148 L 92 148 L 72 118 L 82 78 Z" fill="url(#s-armor)" stroke="#1E3E4A" stroke-width="2" />
+    <path d="M 112 40 L 145 40 L 165 72 L 150 72 Z" fill="#92F702" />
+    <polygon points="135,48 148,48 158,64 145,64" fill="#09161B" />
+  </g>
+
+  <!-- Clean Face Mask -->
+  <g id="face-mask">
+    <polygon points="76,104 118,104 112,142 86,142 78,124" fill="#F8F9FA" />
+  </g>
+
+  <!-- Visor with Glowing Star Checkmark -->
+  <g id="visor">
+    <path d="M 64 88 L 146 84 L 140 114 L 68 118 Z" fill="#050D10" stroke="#18333D" stroke-width="2" />
+    <path d="M 68 91 L 142 87 L 136 111 L 72 114 Z" fill="url(#s-visor-grad)" filter="url(#s-glow)" opacity="0.95" />
+    <!-- Checkmark on Left -->
+    <path d="M 80 102 L 87 108 L 100 95" fill="none" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" />
+    <!-- Star on Right -->
+    <path d="M 122 93 L 124 99 L 130 101 L 124 103 L 122 109 L 120 103 L 114 101 L 120 99 Z" fill="#FFFFFF" />
+  </g>
+
+  <!-- Triumphant Thumbs-Up Cyber Hand -->
+  <g id="thumbs-up">
+    <!-- Arm reaching forward-up -->
+    <path d="M 155 170 L 185 145 L 180 115" fill="none" stroke="#18333D" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M 155 170 L 185 145 L 180 115" fill="none" stroke="#92F702" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+    <!-- Fist -->
+    <circle cx="180" cy="112" r="14" fill="#0D1E24" stroke="#92F702" stroke-width="2" />
+    <!-- Thumb pointing up -->
+    <rect x="175" y="88" width="9" height="18" rx="4.5" fill="#F8F9FA" stroke="#18333D" stroke-width="1.5" />
+    <circle cx="179.5" cy="94" r="2.5" fill="#92F702" />
+    <!-- Thumb glow pulse -->
+    <circle cx="179.5" cy="90" r="12" fill="#92F702" opacity="0.25" filter="url(#s-glow)" />
+  </g>
+</svg>

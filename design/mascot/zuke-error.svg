@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="100%" height="100%">
+  <defs>
+    <!-- Coral / Reddish Warning Visor Gradient -->
+    <linearGradient id="e-visor-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF5E8A" />
+      <stop offset="60%" stop-color="#FF3D71" />
+      <stop offset="100%" stop-color="#D41E52" />
+    </linearGradient>
+    <linearGradient id="e-armor" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#18333D" />
+      <stop offset="60%" stop-color="#0D1E24" />
+      <stop offset="100%" stop-color="#09161B" />
+    </linearGradient>
+    <filter id="e-glow" x="-25%" y="-25%" width="150%" height="150%">
+      <feGaussianBlur stdDeviation="7" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Ambient Warning Glow -->
+  <g id="glow">
+    <circle cx="120" cy="115" r="75" fill="#FF3D71" opacity="0.12" filter="url(#e-glow)" />
+  </g>
+
+  <!-- Body / Torso -->
+  <g id="body">
+    <path d="M 68 185 L 95 155 L 145 155 L 172 185 L 155 215 L 85 215 Z" fill="url(#e-armor)" stroke="#18333D" stroke-width="2" />
+    <!-- Chest Plate & Warning Emblem -->
+    <path d="M 90 162 L 150 162 L 140 198 L 100 198 Z" fill="#09161B" stroke="#FF3D71" stroke-opacity="0.3" stroke-width="1.5" />
+    <polygon points="120,169 133,191 107,191" fill="#050D10" stroke="#FF3D71" stroke-width="1.5" />
+    <circle cx="120" cy="177" r="2" fill="#FF3D71" />
+    <rect x="119" y="181" width="2" height="6" rx="1" fill="#FF3D71" />
+  </g>
+
+  <!-- Head & Helmet (Tilted ~12 deg in Confusion) -->
+  <g id="helmet" transform="rotate(-8 120 110)">
+    <path d="M 85 45 L 148 45 L 175 88 L 158 132 L 138 148 L 92 148 L 72 118 L 82 78 Z" fill="url(#e-armor)" stroke="#1E3E4A" stroke-width="2" />
+    <path d="M 112 40 L 145 40 L 165 72 L 150 72 Z" fill="#FF3D71" />
+
+    <!-- Clean Face Mask -->
+    <polygon points="76,104 118,104 112,142 86,142 78,124" fill="#F8F9FA" />
+
+    <!-- Visor with Error / Question Mark Display -->
+    <path d="M 64 88 L 146 84 L 140 114 L 68 118 Z" fill="#050D10" stroke="#18333D" stroke-width="2" />
+    <path d="M 68 91 L 142 87 L 136 111 L 72 114 Z" fill="url(#e-visor-grad)" filter="url(#e-glow)" opacity="0.95" />
+
+    <!-- Question Mark HUD in Visor -->
+    <path d="M 102 96 Q 106 93 110 96 Q 112 99 108 102 L 108 105" fill="none" stroke="#FFFFFF" stroke-width="2.8" stroke-linecap="round" />
+    <circle cx="108" cy="109" r="1.5" fill="#FFFFFF" />
+  </g>
+
+  <!-- Cyber Arm Scratching Helmet -->
+  <g id="scratching-arm">
+    <path d="M 72 165 L 45 130 L 60 75" fill="none" stroke="#18333D" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M 72 165 L 45 130 L 60 75" fill="none" stroke="#92F702" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+    <!-- Hand at helmet -->
+    <circle cx="62" cy="74" r="10" fill="#0D1E24" stroke="#92F702" stroke-width="2" />
+    <circle cx="62" cy="74" r="4" fill="#92F702" />
+  </g>
+
+  <!-- Right Hand with Tiny Wrench / Spark -->
+  <g id="wrench-tool" transform="translate(170, 140)">
+    <!-- Arm -->
+    <path d="M -15 25 L 10 15 L 15 -5" fill="none" stroke="#18333D" stroke-width="10" stroke-linecap="round" />
+    <!-- Tiny Cyber Wrench -->
+    <path d="M 10 -15 L 25 5 L 20 10 L 5 -10 Z" fill="#92F702" />
+    <circle cx="20" cy="5" r="4" fill="#09161B" />
+    <circle cx="8" cy="-12" r="3" fill="#09161B" />
+    <!-- Disconnected Cable Sparks -->
+    <path d="M 28 -5 L 34 -8 L 32 -2 L 38 -4" fill="none" stroke="#FFD600" stroke-width="1.8" stroke-linecap="round" />
+  </g>
+</svg>

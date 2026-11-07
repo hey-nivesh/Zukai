@@ -92,16 +92,20 @@
 
 ## 5. Asset Manifest: Deliverables & Specifications
 
-All mascot assets will be prepared for React Native Expo in **Vector SVG** (scaled dynamically), **High-Density PNG** (@1x, @2x, @3x for instant image rendering), and **Lottie JSON** (for interactive animations).
+> [!IMPORTANT]
+> **Asset Format Amendment:** Mascots are **NOT** vector SVG or Lottie. The final mascot assets are **3D-rendered-style PNG images with transparent backgrounds** exported at high density (@1x, @2x, @3x). Any earlier SVG mascots were concept sketches only and must not be used in the production app.
+>
+> In the React Native application, all mascots are rendered using **`expo-image`** (`<Image contentFit="contain" priority="high" />`). All idle animations—such as gentle vertical floating, subtle rhythmic scaling, and ambient neon glow pulsing—are implemented **directly in code using `react-native-reanimated`**, providing silky 60fps performance without Lottie runtime bloat or SVG DOM parsing overhead.
 
 | Asset File Name | Primary Format | Target Render Size (dp) | Export Formats & Densities | Purpose |
 | :--- | :--- | :--- | :--- | :--- |
-| `mascot-welcome` | SVG / Lottie | 180 x 180 | SVG, PNG (@1x 180px, @2x 360px, @3x 540px), Lottie JSON | Onboarding hero, auth header |
-| `mascot-uploading`| SVG | 140 x 140 | SVG, PNG (@1x 140px, @2x 280px, @3x 420px) | Upload dialog sheet |
-| `mascot-thinking` | Lottie (Animated)| 200 x 200 | Lottie JSON (60fps loop), PNG fallback | Processing screen live animation |
-| `mascot-listening`| Lottie / SVG | 160 x 160 | Lottie JSON (Subtle head bob loop), SVG, PNG | Audio player ambient visualizer |
-| `mascot-success` | Lottie / SVG | 160 x 160 | Lottie JSON (1-shot celebration), SVG, PNG | Audio ready & milestone alerts |
-| `mascot-error` | SVG | 140 x 140 | SVG, PNG (@1x 140px, @2x 280px, @3x 420px) | Error dialogs and retry screens |
-| `mascot-empty` | SVG | 160 x 160 | SVG, PNG (@1x 160px, @2x 320px, @3x 480px) | Empty library & search views |
-| `mascot-paywall` | SVG / Lottie | 180 x 180 | SVG, PNG (@1x 180px, @2x 360px, @3x 540px), Lottie JSON | Pro upgrade sheet hero |
-| `mascot-avatar-head`| SVG | 48 x 48 | SVG, PNG (@1x 48px, @2x 96px, @3x 144px) | Mini status badges, app bar avatar |
+| `mascot-welcome.png` | 3D-Rendered PNG | 180 x 180 | PNG (@1x 180px, @2x 360px, @3x 540px) | Onboarding hero, auth header |
+| `mascot-uploading.png`| 3D-Rendered PNG | 140 x 140 | PNG (@1x 140px, @2x 280px, @3x 420px) | Upload dialog sheet |
+| `mascot-thinking.png` | 3D-Rendered PNG | 200 x 200 | PNG (@1x 200px, @2x 400px, @3x 600px) | Processing screen live animation |
+| `mascot-listening.png`| 3D-Rendered PNG | 160 x 160 | PNG (@1x 160px, @2x 320px, @3x 480px) | Audio player ambient visualizer |
+| `mascot-success.png` | 3D-Rendered PNG | 160 x 160 | PNG (@1x 160px, @2x 320px, @3x 480px) | Audio ready & milestone alerts |
+| `mascot-error.png` | 3D-Rendered PNG | 140 x 140 | PNG (@1x 140px, @2x 280px, @3x 420px) | Error dialogs and retry screens |
+| `mascot-empty.png` | 3D-Rendered PNG | 160 x 160 | PNG (@1x 160px, @2x 320px, @3x 480px) | Empty library & search views |
+| `mascot-paywall.png` | 3D-Rendered PNG | 180 x 180 | PNG (@1x 180px, @2x 360px, @3x 540px) | Pro upgrade sheet hero |
+| `mascot-avatar-head.png`| 3D-Rendered PNG | 48 x 48 | PNG (@1x 48px, @2x 96px, @3x 144px) | Mini status badges, app bar avatar |
+

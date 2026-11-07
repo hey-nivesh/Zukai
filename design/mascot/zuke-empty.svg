@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="100%" height="100%">
+  <defs>
+    <linearGradient id="em-visor-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#A4F924" />
+      <stop offset="50%" stop-color="#92F702" />
+      <stop offset="100%" stop-color="#0BF807" />
+    </linearGradient>
+    <linearGradient id="em-glass-pedestal" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.18)" />
+      <stop offset="100%" stop-color="rgba(15,31,38,0.60)" />
+    </linearGradient>
+    <linearGradient id="em-armor" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#18333D" />
+      <stop offset="60%" stop-color="#0D1E24" />
+      <stop offset="100%" stop-color="#09161B" />
+    </linearGradient>
+    <filter id="em-glow" x="-25%" y="-25%" width="150%" height="150%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Ambient Glow -->
+  <g id="glow">
+    <circle cx="120" cy="115" r="75" fill="#92F702" opacity="0.10" filter="url(#em-glow)" />
+    <ellipse cx="120" cy="205" rx="75" ry="16" fill="#0BF807" opacity="0.14" filter="url(#em-glow)" />
+  </g>
+
+  <!-- Frosted Glass Pedestal -->
+  <g id="pedestal">
+    <ellipse cx="120" cy="208" rx="82" ry="18" fill="url(#em-glass-pedestal)" stroke="#92F702" stroke-opacity="0.3" stroke-width="1.5" />
+    <path d="M 42 208 L 48 222 A 75 14 0 0 0 192 222 L 198 208 Z" fill="rgba(9,22,27,0.85)" stroke="#18333D" stroke-width="1.5" />
+  </g>
+
+  <!-- Sitting Body / Torso -->
+  <g id="body">
+    <path d="M 74 165 L 95 142 L 145 142 L 166 165 L 152 195 L 88 195 Z" fill="url(#em-armor)" stroke="#18333D" stroke-width="2" />
+    <!-- Legs resting over pedestal edge -->
+    <path d="M 92 195 L 90 216 L 105 220" fill="none" stroke="#132830" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M 148 195 L 150 216 L 135 220" fill="none" stroke="#132830" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
+    <!-- Chest Plate & Emblem -->
+    <path d="M 94 148 L 146 148 L 138 180 L 102 180 Z" fill="#09161B" stroke="#92F702" stroke-opacity="0.3" stroke-width="1.5" />
+    <polygon points="120,154 133,176 107,176" fill="#050D10" stroke="#18333D" stroke-width="1.5" />
+    <rect x="112" y="165" width="2.5" height="7" rx="1.2" fill="#92F702" />
+    <rect x="118.8" y="159" width="2.5" height="13" rx="1.2" fill="#92F702" />
+    <rect x="125.5" y="164" width="2.5" height="8" rx="1.2" fill="#92F702" />
+  </g>
+
+  <!-- Head & Helmet (Glancing Sideways/Looking for Docs) -->
+  <g id="helmet" transform="translate(4, -3)">
+    <path d="M 85 45 L 148 45 L 175 88 L 158 132 L 138 148 L 92 148 L 72 118 L 82 78 Z" fill="url(#em-armor)" stroke="#1E3E4A" stroke-width="2" />
+    <path d="M 112 40 L 145 40 L 165 72 L 150 72 Z" fill="#92F702" />
+
+    <!-- Clean Face Mask -->
+    <polygon points="76,104 118,104 112,142 86,142 78,124" fill="#F8F9FA" />
+
+    <!-- Visor with Playful Scanning Dots -->
+    <path d="M 64 88 L 146 84 L 140 114 L 68 118 Z" fill="#050D10" stroke="#18333D" stroke-width="2" />
+    <path d="M 68 91 L 142 87 L 136 111 L 72 114 Z" fill="url(#em-visor-grad)" filter="url(#em-glow)" opacity="0.95" />
+
+    <!-- Inquisitive Searching Eye Dots -->
+    <circle cx="88" cy="101" r="4.5" fill="#FFFFFF" />
+    <circle cx="120" cy="99" r="4.5" fill="#FFFFFF" />
+  </g>
+
+  <!-- Empty Holographic Audio Tray in Hands -->
+  <g id="empty-tray" transform="translate(85, 168)">
+    <polygon points="10,0 60,0 66,16 4,16" fill="rgba(146,247,2,0.10)" stroke="#92F702" stroke-width="1.5" stroke-dasharray="3 3" />
+    <!-- Empty dotted outline representing missing document -->
+    <rect x="18" y="-14" width="34" height="22" rx="3" fill="none" stroke="#FFFFFF" stroke-opacity="0.4" stroke-dasharray="2 2" stroke-width="1.2" />
+    <!-- Subtle '+' invite icon -->
+    <path d="M 35 -6 L 35 0 M 32 -3 L 38 -3" stroke="#92F702" stroke-width="2" stroke-linecap="round" />
+  </g>
+</svg>

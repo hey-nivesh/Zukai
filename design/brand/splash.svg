@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1920" width="1080" height="1920">
+  <defs>
+    <radialGradient id="sp-bg-glow" cx="50%" cy="46%" r="55%">
+      <stop offset="0%" stop-color="#122A21" />
+      <stop offset="40%" stop-color="#09161B" />
+      <stop offset="100%" stop-color="#050D10" />
+    </radialGradient>
+
+    <linearGradient id="sp-green" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#A4F924" />
+      <stop offset="45%" stop-color="#92F702" />
+      <stop offset="100%" stop-color="#0BF807" />
+    </linearGradient>
+
+    <linearGradient id="sp-gloss" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.9" />
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.0" />
+    </linearGradient>
+
+    <filter id="sp-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="36" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Deep Obsidian Background -->
+  <rect width="1080" height="1920" fill="url(#sp-bg-glow)" />
+
+  <!-- Ambient Neon Aura -->
+  <circle cx="540" cy="880" r="320" fill="#92F702" opacity="0.16" filter="url(#sp-glow)" />
+  <circle cx="540" cy="940" r="260" fill="#0BF807" opacity="0.12" filter="url(#sp-glow)" />
+
+  <!-- Centered Zukai Logo Mark -->
+  <g transform="translate(300, 640) scale(0.48)">
+    <path d="M 120 780 L 720 780 L 920 620 L 780 620 L 520 720 L 260 720 Z" fill="#09161B" />
+    <path d="M 280 200 L 460 200 L 860 680 L 680 680 Z" fill="url(#sp-green)" filter="url(#sp-glow)" opacity="0.95" />
+    <polygon points="460,200 520,200 860,610 800,610" fill="#09161B" />
+    <polygon points="530,200 580,200 900,590 850,590" fill="url(#sp-green)" />
+
+    <!-- Helmet -->
+    <path d="M 240 180 L 580 180 L 680 340 L 620 520 L 520 580 L 340 580 L 260 480 L 300 320 Z" fill="#0D1E24" stroke="#18333D" stroke-width="8" />
+    <path d="M 380 160 L 560 160 L 640 280 L 580 280 Z" fill="url(#sp-green)" />
+
+    <!-- Mask -->
+    <polygon points="260,420 440,420 410,560 300,560 280,490" fill="#F8F9FA" />
+
+    <!-- Visor -->
+    <path d="M 220 360 L 540 340 L 510 460 L 230 475 Z" fill="#050D10" stroke="#18333D" stroke-width="8" />
+    <path d="M 235 372 L 525 352 L 498 448 L 245 460 Z" fill="url(#sp-green)" filter="url(#sp-glow)" />
+    <path d="M 242 376 L 518 358 L 510 405 Q 370 425 248 412 Z" fill="url(#sp-gloss)" />
+
+    <!-- Audio Triangle -->
+    <g transform="translate(620, 520)">
+      <polygon points="90,10 170,150 10,150" fill="#050D10" stroke="#18333D" stroke-width="8" />
+      <rect x="42" y="80" width="16" height="45" rx="8" fill="url(#sp-green)" />
+      <rect x="82" y="45" width="16" height="80" rx="8" fill="url(#sp-green)" />
+      <rect x="122" y="75" width="16" height="50" rx="8" fill="url(#sp-green)" />
+    </g>
+  </g>
+
+  <!-- Wordmark "ZUKAI" -->
+  <g transform="translate(540, 1160)" text-anchor="middle">
+    <text font-family="'Inter', sans-serif" font-size="64" font-weight="800" fill="#F8F9FA" letter-spacing="12">ZUKAI</text>
+    <text y="48" font-family="'Inter', sans-serif" font-size="20" font-weight="500" fill="#92F702" letter-spacing="4">LISTEN TO UNDERSTAND</text>
+  </g>
+</svg>

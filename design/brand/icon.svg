@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <!-- Background Gradient -->
+    <radialGradient id="icon-bg-mesh" cx="50%" cy="40%" r="65%">
+      <stop offset="0%" stop-color="#132E24" />
+      <stop offset="45%" stop-color="#09161B" />
+      <stop offset="100%" stop-color="#040A0D" />
+    </radialGradient>
+
+    <!-- Neon Green Brand Gradient -->
+    <linearGradient id="icon-green-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#A4F924" />
+      <stop offset="45%" stop-color="#92F702" />
+      <stop offset="100%" stop-color="#0BF807" />
+    </linearGradient>
+
+    <!-- Visor Gloss Reflection -->
+    <linearGradient id="icon-gloss-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.85" />
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.0" />
+    </linearGradient>
+
+    <!-- Deep Armor Gradient -->
+    <linearGradient id="icon-armor-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1A3845" />
+      <stop offset="60%" stop-color="#0D1E24" />
+      <stop offset="100%" stop-color="#061014" />
+    </linearGradient>
+
+    <!-- Outer Ambient Glow Filter -->
+    <filter id="icon-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="32" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background Canvas -->
+  <rect width="1024" height="1024" rx="228" fill="url(#icon-bg-mesh)" />
+  
+  <!-- Subtle 1px Inner Border -->
+  <rect x="2" y="2" width="1020" height="1020" rx="226" fill="none" stroke="rgba(255, 255, 255, 0.12)" stroke-width="4" />
+
+  <!-- Ambient Radial Neon Aura Behind Logo -->
+  <circle cx="512" cy="480" r="280" fill="#92F702" opacity="0.18" filter="url(#icon-glow)" />
+  <circle cx="512" cy="540" r="220" fill="#0BF807" opacity="0.15" filter="url(#icon-glow)" />
+
+  <!-- Main Z-Glyph & Visor Mascot Assembly -->
+  <g transform="translate(162, 162) scale(0.68)">
+    <!-- Back Angular Z Body -->
+    <path d="M 120 780 L 720 780 L 920 620 L 780 620 L 520 720 L 260 720 Z" fill="#09161B" />
+    
+    <!-- Giant Diagonal 'Z' Stripe in Neon Volt -->
+    <path d="M 280 200 L 460 200 L 860 680 L 680 680 Z" fill="url(#icon-green-grad)" filter="url(#icon-glow)" opacity="0.95" />
+    <!-- Secondary Parallel Accent Line -->
+    <polygon points="460,200 520,200 860,610 800,610" fill="#09161B" />
+    <polygon points="530,200 580,200 900,590 850,590" fill="url(#icon-green-grad)" />
+
+    <!-- Helmet Shell (Top & Back of Head) -->
+    <path d="M 240 180 L 580 180 L 680 340 L 620 520 L 520 580 L 340 580 L 260 480 L 300 320 Z" fill="url(#icon-armor-grad)" stroke="#18333D" stroke-width="8" />
+    <path d="M 380 160 L 560 160 L 640 280 L 580 280 Z" fill="url(#icon-green-grad)" />
+
+    <!-- Clean Face Mask (Crisp White Geometric Plate) -->
+    <polygon points="260,420 440,420 410,560 300,560 280,490" fill="#F8F9FA" />
+
+    <!-- Visor Assembly (Hero Feature) -->
+    <path d="M 220 360 L 540 340 L 510 460 L 230 475 Z" fill="#050D10" stroke="#18333D" stroke-width="8" />
+    <path d="M 235 372 L 525 352 L 498 448 L 245 460 Z" fill="url(#icon-green-grad)" filter="url(#icon-glow)" />
+    <!-- Visor Upper Gloss Reflection -->
+    <path d="M 242 376 L 518 358 L 510 405 Q 370 425 248 412 Z" fill="url(#icon-gloss-grad)" />
+
+    <!-- Lower Triangle Audio Mark inside Z Crook -->
+    <g transform="translate(620, 520)">
+      <polygon points="90,10 170,150 10,150" fill="#050D10" stroke="#18333D" stroke-width="8" />
+      <!-- Equalizer Bars -->
+      <rect x="42" y="80" width="16" height="45" rx="8" fill="url(#icon-green-grad)" />
+      <rect x="82" y="45" width="16" height="80" rx="8" fill="url(#icon-green-grad)" />
+      <rect x="122" y="75" width="16" height="50" rx="8" fill="url(#icon-green-grad)" />
+    </g>
+  </g>
+</svg>

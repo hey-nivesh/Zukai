@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zukai — 4. Language Choice</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="screen-common.css">
+  <style>
+    .lang-screen {
+      background-image: 
+        radial-gradient(circle at 80% 20%, rgba(146, 247, 2, 0.16) 0%, transparent 45%),
+        radial-gradient(circle at 20% 75%, rgba(11, 248, 7, 0.14) 0%, transparent 40%);
+    }
+
+    .lang-card-option {
+      background: var(--glass-surface);
+      border: 2px solid var(--glass-border);
+      border-radius: var(--radius-2xl);
+      padding: 20px;
+      margin-bottom: 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .lang-card-option.selected {
+      border-color: var(--brand-500);
+      background: rgba(146, 247, 2, 0.08);
+      box-shadow: 0 0 20px rgba(146, 247, 2, 0.25);
+    }
+
+    .lang-radio {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid var(--text-tertiary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .lang-card-option.selected .lang-radio {
+      border-color: var(--brand-500);
+      background: var(--brand-500);
+    }
+
+    .lang-card-option.selected .lang-radio::after {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #09161B;
+    }
+
+    .sample-bubble {
+      background: rgba(9, 22, 27, 0.8);
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-top: 12px;
+      border-left: 3px solid var(--brand-500);
+    }
+  </style>
+</head>
+<body>
+  <div class="phone-viewport lang-screen">
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="status-bar-icons">
+        <svg width="16" height="12" viewBox="0 0 24 18" fill="currentColor"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L12 22l7.03-4.39C20.26 16.07 21 14.12 21 12c0-4.97-4.03-9-9-9z"/></svg>
+        <svg width="24" height="12" viewBox="0 0 24 12" fill="currentColor"><rect x="1" y="1" width="19" height="10" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><rect x="3" y="3" width="13" height="6" rx="1.5"/></svg>
+      </div>
+    </div>
+
+    <div class="screen-content" style="padding-bottom: 24px;">
+      <div style="text-align: center; margin: 16px 0 24px;">
+        <div class="mascot-placeholder anim-mascot-float" style="width: 84px; height: 84px; margin-bottom: 12px;">
+          <span class="mascot-placeholder-badge" style="font-size: 8px; padding: 1px 4px;">3D PNG</span>
+          <span class="mascot-placeholder-title" style="font-size: 10px;">Zuke: Base</span>
+        </div>
+        <h1 style="font-size: 26px; font-weight: 800; letter-spacing: -0.5px;">Choose Audio Language</h1>
+        <p style="font-size: 14px; color: var(--text-secondary); margin-top: 4px;">
+          How would you like Zukai to explain your documents? You can change this per upload.
+        </p>
+      </div>
+
+      <!-- Option 1: Hinglish (Hero Recommended) -->
+      <div class="lang-card-option selected" id="opt-hinglish" onclick="selectLang('hinglish')">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 18px; font-weight: 700; color: var(--text-primary);">Hinglish</span>
+              <span style="font-size: 11px; font-weight: 700; background: var(--brand-500); color: #09161B; padding: 2px 8px; border-radius: 9999px;">POPULAR</span>
+            </div>
+            <p style="font-size: 13px; color: var(--text-secondary); margin-top: 2px;">Conversational Romanized Hindi + English</p>
+          </div>
+          <div class="lang-radio"></div>
+        </div>
+        <div class="sample-bubble">
+          <em>&ldquo;Seedhi baat yeh hai: app crash nahi hogi kyunki auto-scaling traffic aate hi naye servers spin up kar deta hai.&rdquo;</em>
+        </div>
+      </div>
+
+      <!-- Option 2: English -->
+      <div class="lang-card-option" id="opt-english" onclick="selectLang('english')">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <span style="font-size: 18px; font-weight: 700; color: var(--text-primary);">English</span>
+            <p style="font-size: 13px; color: var(--text-secondary); margin-top: 2px;">Articulate, simple global English with analogies</p>
+          </div>
+          <div class="lang-radio"></div>
+        </div>
+        <div class="sample-bubble">
+          <em>&ldquo;In simple terms: the app will never crash because auto-scaling spins up backup servers the instant traffic spikes.&rdquo;</em>
+        </div>
+      </div>
+
+      <div style="margin-top: 28px;">
+        <button class="btn btn-primary btn-lg" onclick="window.location.href='5-home.html'">
+          <span class="shimmer-bar"></span>
+          <span>Set Preference & Continue</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="home-indicator"></div>
+  </div>
+
+  <script>
+    function selectLang(choice) {
+      document.getElementById('opt-hinglish').classList.toggle('selected', choice === 'hinglish');
+      document.getElementById('opt-english').classList.toggle('selected', choice === 'english');
+    }
+  </script>
+</body>
+</html>
