@@ -22,6 +22,17 @@ export async function fetchTrackByJobId(jobId: string): Promise<AudioTrackRow | 
   return data;
 }
 
+export async function fetchTracksByDocumentId(documentId: string): Promise<AudioTrackRow[]> {
+  const { data, error } = await supabase
+    .from('audio_tracks')
+    .select('*')
+    .eq('document_id', documentId)
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return data ?? [];
+}
+
 export async function fetchTrackById(trackId: string): Promise<AudioTrackRow | null> {
   const { data, error } = await supabase
     .from('audio_tracks')

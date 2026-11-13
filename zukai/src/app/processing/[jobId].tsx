@@ -44,6 +44,9 @@ import { Text } from '../../components/Text';
 import { ShinyButton } from '../../components/ShinyButton';
 import { Mascot } from '../../components/Mascot';
 import { useJob, useCancelJob, useCreateAudioJob } from '@/features/jobs/hooks/useJob';
+import { usePlaybackStore } from '@/features/playback/playbackStore';
+import { fetchTrackByJobId } from '@/features/tracks/api/tracksApi';
+import { supabase } from '@/lib/supabase';
 import { JobStatus, Database } from '@/types/database';
 import { mapRpcError } from '@/lib/rpcErrors';
 
@@ -116,6 +119,8 @@ export default function ProcessingScreen() {
 
   // Cancel confirmation modal state
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [isStartingPlayback, setIsStartingPlayback] = useState(false);
+  const { playTrack } = usePlaybackStore();
 
   // Dev-only simulated state overrides
   const [simulatedJob, setSimulatedJob] = useState<Partial<AudioJobRow> | null>(null);
@@ -199,6 +204,33 @@ export default function ProcessingScreen() {
     } catch (err: any) {
       const mapped = mapRpcError(err);
       Alert.alert(mapped.title, mapped.message);
+    }
+  };
+
+  // Start Audio Playback Handler
+  const handleListenNow = async () => {
+    if (!jobId) return;
+    try {
+      setIsStartingPlayback(true);
+      const track = await fetchTrackByJobId(jobId);
+      if (track) {
+        let docTitle = 'Audio Explanation';
+        if (realJob?.document_id) {
+          const { data: doc } = await supabase
+            .from('documents')
+            .select('title')
+            .eq('id', realJob.document_id)
+            .maybeSingle();
+          if (doc?.title) docTitle = doc.title;
+        }
+        await playTrack(track, docTitle);
+      }
+      router.push('/player' as any);
+    } catch (err: any) {
+      console.warn('Failed to load track for player:', err?.message);
+      router.push('/player' as any);
+    } finally {
+      setIsStartingPlayback(false);
     }
   };
 
@@ -388,12 +420,13 @@ export default function ProcessingScreen() {
         <View style={styles.actionArea}>
           {status === 'ready' && (
             <ShinyButton
-              label="Listen to Audio Now"
+              label={isStartingPlayback ? 'Loading Audio...' : 'Listen to Audio Now'}
               variant="primary"
               size="lg"
               fullWidth
+              loading={isStartingPlayback}
               icon={<Play size={20} color={C.textInverse} strokeWidth={2.5} />}
-              onPress={() => router.push('/player' as any)}
+              onPress={handleListenNow}
             />
           )}
 

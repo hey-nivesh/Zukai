@@ -1,3 +1,12 @@
-
+.env
+/node_modules
+/.worker/node_modules
+/.zukai/node_modules
+/.db/node_modules
+/zukai/.env.development.local
+/zukai/.env.production.local
+/worker/.env.development.local
+/worker/.env.production.local
+/db/.env.development.local
+/db/.env.production.local
 .userprofile/
-

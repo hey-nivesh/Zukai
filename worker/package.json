@@ -13,7 +13,8 @@
     "eval": "tsx eval/runEval.ts",
     "eval:full": "tsx eval/evalRunner.ts",
     "eval:smoke": "tsx eval/evalRunner.ts --smoke",
-    "eval:gate": "tsx eval/evalRunner.ts --gate"
+    "eval:gate": "tsx eval/evalRunner.ts --gate",
+    "feedback:report": "tsx src/scripts/feedbackReport.ts"
   },
   "dependencies": {
     "@fastify/cors": "^10.0.1",
@@ -23,6 +24,7 @@
     "dotenv": "^16.4.5",
     "fastify": "^5.0.0",
     "mammoth": "^1.8.0",
+    "nodemon": "^3.1.14",
     "pdf-parse": "^1.1.1",
     "pino": "^10.4.0",
     "pino-pretty": "^13.2.0",

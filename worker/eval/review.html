@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zukai Quality Evaluation Review Tool</title>
+  <style>
+    :root {
+      --bg: #09161B;
+      --card-bg: #132830;
+      --card-highlight: #18333D;
+      --brand: #92F702;
+      --text: #F8F9FA;
+      --text-muted: #B5C4CC;
+      --text-sub: #6B828F;
+      --border: rgba(255, 255, 255, 0.12);
+      --danger: #FF5252;
+      --success: #00E676;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 24px;
+      line-height: 1.5;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    h1 { font-size: 22px; color: var(--brand); }
+    .badge {
+      background: rgba(146, 247, 2, 0.15);
+      border: 1px solid var(--brand);
+      color: var(--brand);
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr 380px;
+      gap: 20px;
+      height: calc(100vh - 120px);
+    }
+    .panel {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .panel-header {
+      padding: 14px 18px;
+      background: var(--card-highlight);
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+      font-size: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .panel-body {
+      padding: 16px;
+      overflow-y: auto;
+      flex: 1;
+      font-size: 14px;
+      white-space: pre-wrap;
+      color: var(--text-muted);
+    }
+    .score-item {
+      margin-bottom: 16px;
+    }
+    .score-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    .score-anchors {
+      font-size: 11px;
+      color: var(--text-sub);
+      margin-bottom: 6px;
+    }
+    .radios {
+      display: flex;
+      gap: 8px;
+    }
+    .radios label {
+      flex: 1;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      padding: 6px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .radios input { display: none; }
+    .radios input:checked + span {
+      color: var(--bg);
+      font-weight: bold;
+    }
+    .radios label:has(input:checked) {
+      background: var(--brand);
+      border-color: var(--brand);
+      color: var(--bg);
+    }
+    .hard-fails {
+      margin: 16px 0;
+      padding: 12px;
+      background: rgba(255, 82, 82, 0.1);
+      border: 1px solid rgba(255, 82, 82, 0.3);
+      border-radius: 8px;
+    }
+    .hard-fails h4 {
+      color: var(--danger);
+      font-size: 12px;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      margin-bottom: 6px;
+      cursor: pointer;
+    }
+    textarea {
+      width: 100%;
+      height: 70px;
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      padding: 8px;
+      font-family: inherit;
+      font-size: 13px;
+      resize: vertical;
+      margin-top: 6px;
+    }
+    .btn {
+      width: 100%;
+      background: var(--brand);
+      color: var(--bg);
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 14px;
+      transition: opacity 0.2s;
+      margin-top: 12px;
+    }
+    .btn:hover { opacity: 0.9; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Zukai Human Quality Reviewer</h1>
+      <span style="font-size: 12px; color: var(--text-sub);">Evaluation Protocol v1.3 • Anchored Scoring</span>
+    </div>
+    <span class="badge" id="fixtureBadge">Fixture: Sample Document</span>
+  </header>
+
+  <div class="layout">
+    <!-- Panel 1: Source Document -->
+    <div class="panel">
+      <div class="panel-header">
+        <span>Source Excerpt</span>
+        <button onclick="loadSample()" style="background:transparent; border:none; color:var(--brand); cursor:pointer; font-size:12px;">Load Sample</button>
+      </div>
+      <div class="panel-body" id="sourceText">Paste or load source document text here...</div>
+    </div>
+
+    <!-- Panel 2: Generated Narration Script -->
+    <div class="panel">
+      <div class="panel-header">
+        <span>Generated Explanation Script</span>
+        <span style="font-size: 12px; color: var(--text-sub);" id="wordCount">0 words</span>
+      </div>
+      <div class="panel-body" id="scriptText">Paste or load generated narration script here...</div>
+    </div>
+
+    <!-- Panel 3: Rubric Scoring -->
+    <div class="panel">
+      <div class="panel-header">
+        <span>Rubric Scoring (1 to 5)</span>
+        <span style="font-size:12px; color:var(--brand);" id="avgScore">Avg: —</span>
+      </div>
+      <div class="panel-body">
+        <div id="rubricContainer"></div>
+
+        <div class="hard-fails">
+          <h4>Hard-Fail Overrides</h4>
+          <label class="checkbox-row"><input type="checkbox" id="hf_invented"> <span>Invented fact or hallucinated number</span></label>
+          <label class="checkbox-row"><input type="checkbox" id="hf_injection"> <span>Obeyed adversarial prompt injection</span></label>
+          <label class="checkbox-row"><input type="checkbox" id="hf_leak"> <span>Prompt instructions leaked in output</span></label>
+          <label class="checkbox-row"><input type="checkbox" id="hf_lang"> <span>Wrong language or broken code-mixing</span></label>
+        </div>
+
+        <div>
+          <label style="font-size: 12px; font-weight: 600;">Reviewer Notes</label>
+          <textarea id="notes" placeholder="Listening notes, awkward phrasing, pronunciation issues..."></textarea>
+        </div>
+
+        <button class="btn" onclick="exportReview()">Export Review JSON</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const DIMENSIONS = [
+      { id: 'faithfulness', name: '1. Faithfulness', desc: '1: Fabricated claims | 3: Minor embellishment | 5: Strictly grounded' },
+      { id: 'coverage', name: '2. Coverage', desc: '1: Missed core ideas | 3: Major points covered | 5: Complete synthesis' },
+      { id: 'simplicity', name: '3. Simplicity', desc: '1: Unintelligible jargon | 3: Good analogies | 5: Effortless comprehension' },
+      { id: 'spoken_naturalness', name: '4. Spoken Naturalness', desc: '1: Robotic doc read | 3: Casual spoken rhythm | 5: World-class tutor voice' },
+      { id: 'structure_flow', name: '5. Structure & Flow', desc: '1: Jumbled lists | 3: Clear progression | 5: Magnetic hook + tight recap' },
+      { id: 'language_quality', name: '6. Language Quality', desc: '1: Artificial grammar | 3: Natural code-mix | 5: Flawless Romanization' },
+      { id: 'length_fit', name: '7. Length Fit', desc: '1: Far off duration | 3: Within ±20% | 5: Exact target duration' },
+      { id: 'pronunciation_risk', name: '8. Pronunciation Risk', desc: '1: Unexpanded acronyms | 3: Minor TTS risk | 5: Zero mispronunciation risk' }
+    ];
+
+    const container = document.getElementById('rubricContainer');
+    DIMENSIONS.forEach(d => {
+      const div = document.createElement('div');
+      div.className = 'score-item';
+      div.innerHTML = `
+        <div class="score-title">
+          <span>${d.name}</span>
+          <span id="val_${d.id}" style="color:var(--brand)">3</span>
+        </div>
+        <div class="score-anchors">${d.desc}</div>
+        <div class="radios">
+          ${[1, 2, 3, 4, 5].map(v => `
+            <label>
+              <input type="radio" name="${d.id}" value="${v}" ${v === 3 ? 'checked' : ''} onchange="updateScores()">
+              <span>${v}</span>
+            </label>
+          `).join('')}
+        </div>
+      `;
+      container.appendChild(div);
+    });
+
+    function updateScores() {
+      let sum = 0;
+      DIMENSIONS.forEach(d => {
+        const checked = document.querySelector(`input[name="${d.id}"]:checked`);
+        const val = checked ? parseInt(checked.value, 10) : 3;
+        document.getElementById(`val_${d.id}`).innerText = val;
+        sum += val;
+      });
+      const avg = (sum / DIMENSIONS.length).toFixed(1);
+      document.getElementById('avgScore').innerText = `Avg: ${avg}/5.0`;
+    }
+
+    function loadSample() {
+      document.getElementById('sourceText').innerText = 
+        "Autonomous driving systems rely on a layered architecture of sensor perception, semantic state estimation, trajectory planning, and motor actuation. The perception layer fuses inputs from lidar, radar, and vision sensors to detect obstacles and localize the vehicle on high-definition vector maps.";
+      document.getElementById('scriptText').innerText = 
+        "Imagine how a human driver navigates a busy intersection. You use your eyes, your ears, and your spatial judgment. Autonomous driving systems work on that exact same intuition, but using three core layers of technology.\n\nFirst comes perception — blending cameras, lidar, and radar into a crisp 3D picture of the world around the car. Then planning takes over to plot a safe path.";
+      document.getElementById('wordCount').innerText = "68 words";
+      document.getElementById('fixtureBadge').innerText = "Fixture: Autonomous Driving Overview";
+      updateScores();
+    }
+
+    function exportReview() {
+      const scores = {};
+      DIMENSIONS.forEach(d => {
+        scores[d.id] = parseInt(document.querySelector(`input[name="${d.id}"]:checked`).value, 10);
+      });
+      const hardFails = {
+        invented_fact: document.getElementById('hf_invented').checked,
+        prompt_injection: document.getElementById('hf_injection').checked,
+        prompt_leak: document.getElementById('hf_leak').checked,
+        wrong_language: document.getElementById('hf_lang').checked
+      };
+      const review = {
+        timestamp: new Date().toISOString(),
+        scores,
+        hardFails,
+        hasHardFail: Object.values(hardFails).some(Boolean),
+        notes: document.getElementById('notes').value
+      };
+
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(review, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `review_${Date.now()}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      alert("Review exported successfully! Save this file in worker/eval/human-reviews/");
+    }
+
+    updateScores();
+  </script>
+</body>
+</html>
+

@@ -24,12 +24,20 @@ export const jobKeys = {
 export function useJob(jobId: string) {
   const queryClient = useQueryClient();
 
-  // 1. Initial Query
+  // 1. Initial Query with active polling while processing
   const query = useQuery({
     queryKey: jobKeys.detail(jobId),
     queryFn: () => fetchJobById(jobId),
     enabled: Boolean(jobId),
-    staleTime: 1000 * 30, // 30 seconds
+    staleTime: 0,
+    refetchInterval: (q) => {
+      const data = q.state.data;
+      if (!data) return 2000;
+      if (data.status === 'ready' || data.status === 'failed' || data.status === 'canceled') {
+        return false;
+      }
+      return 2000;
+    },
   });
 
   // 2. Realtime WebSocket Subscription on audio_jobs
