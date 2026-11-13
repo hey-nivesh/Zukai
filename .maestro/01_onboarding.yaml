@@ -1,0 +1,21 @@
+appId: com.zukai.app
+name: Zukai Onboarding Flow
+---
+# 01 - Onboarding: splash → language select → auth
+- launchApp
+- assertVisible: "Zukai"
+- tapOn:
+    text: "Get Started"
+    optional: true
+- waitForAnimationToEnd
+
+# Language selection
+- assertVisible: "Choose Your Language"
+- tapOn: "English"
+- tapOn: "Continue"
+
+# Should arrive at sign-in
+- assertVisible: "Sign In"
+- assertVisible: "Email"
+- assertVisible: "Password"
+

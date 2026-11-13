@@ -269,3 +269,74 @@
   1. Updated `20261107000002_schema_and_enums.sql` so `public.doc_status` enum includes `'uploading'` (`'uploading', 'uploaded', 'ready', 'failed', 'deleted'`) from the initial schema definition.
   2. For databases where `doc_status` was already initialized, partitioned migration 011 execution into a committed `ALTER TYPE` step prior to altering table defaults or compiling plpgsql routines that reference the new enum value.
   3. Replaced `where (accepted_at is null and expires_at > now())` with `where (accepted_at is null)` on `idx_invitations_unique_pending` in migration 003, removing non-immutable `now()` from index predicates.
+
+### 43. Standardize Audio Output to Broadcast MP3 (Phase 7 Decision Override)
+- **Specification:** Change master audio encoding format from AAC/.m4a to broadcast-normalized MP3 with ID3v2 metadata.
+- **Decision:**
+  1. Worker synthesizes audio and encodes using ffmpeg `libmp3lame` into mono CBR 96 kbps (configurable: 64, 96, 128), 24 kHz or 44.1 kHz, with EBU R128 loudness normalization to -16 LUFS and true peak -1.5 dB.
+  2. Emits ID3v2.3 tags (`TIT2` title, `TPE1` artist "Zukai", `TALB` album "Zukai Audio", `TLAN` language).
+  3. Saves audio to `audio/{owner_id}/{job_id}/final.mp3` with content-type `audio/mpeg`.
+  4. Audio player handles both `.mp3` and existing `.m4a` tracks transparently based on `audio_tracks.format`.
+
+### 44. Compact Spacing & High-Density EdTech Layout (Phase 7 Decision Override)
+- **Specification:** Shift from generous whitespace to compact, informative edtech-style screens with higher data density, tighter lists, and rich visual cues.
+- **Decision:**
+  1. Updated design tokens in `spacing.ts`: screen horizontal padding 16, card padding 12, item gap 8, section gap 16, list row height 56–64.
+  2. Preserved 48x48dp minimum touch targets for accessibility compliance.
+  3. Redesigned Home into a learning dashboard with avatar/streak header, progress ring continue listening card, horizontal quick actions, stats strip, and badge-accented recent document cards.
+
+### 45. 3D Glossy Mascot & Consistent Lucide Iconography
+- **Specification:** Maintain high-end 3D glossy visual identity without low-fidelity SVGs.
+- **Decision:**
+  1. All character art and illustrations use 3D-styled transparent PNGs with glass/plastic material shaders and volt green lighting.
+  2. Standardized on Lucide React Native icon set across the entire app with consistent stroke weights (2.0) and sizes (16, 20, 24).
+
+### 46. Complete Offline Audio Caching & Download Manager
+- **Specification:** Enable full offline playback capability for downloaded audio tracks and transcripts.
+- **Decision:**
+  1. Created `downloadManager.ts` using `expo-file-system` and `@react-native-async-storage/async-storage`.
+  2. Audio tracks are saved to local device cache and indexed with metadata (duration, format, file size, chapters, transcript).
+  3. `playTrack` checks `getLocalAudioUri` first to provide an offline-first playback experience without network delay.
+
+### 47. Advanced Player Controls: Repeat, Sleep Timer, Bookmarks & Feedback
+- **Specification:** Provide full-featured edtech audio player functionality with study aids and user feedback loops.
+- **Decision:**
+  1. Added repeat toggle, sleep timer modal (15, 30, 45, 60 min countdown), and +30s / -15s jump intervals.
+  2. Added bookmarking action backed by the new `bookmarks` Postgres table with visual confirmation toast.
+  3. Connected `AudioFeedbackCard` to the `audio_feedback` table, appearing automatically when playback reaches >=95% completion.
+
+### 48. Native Notification Permission Primer Modal
+- **Specification:** Gracefully request Android 13+ `POST_NOTIFICATIONS` permission without jarring system prompts.
+- **Decision:**
+  1. Built `NotificationPermissionPrimer.tsx` displaying listening mascot and clear value explanation before triggering the Android runtime permission dialog.
+  2. Persisted dismissal status in `@zukai_notif_primer_shown` to ensure primer is presented at most once per install.
+
+### 49. Settings Suite & Google Play Account Deletion Compliance
+- **Specification:** Eliminate dead buttons in Settings and ensure strict Google Play compliance for account data removal.
+- **Decision:**
+  1. Connected Android notifications toggle via `PermissionsAndroid` and `Linking.openSettings()`.
+  2. Integrated cache/storage gauge and clear cache mechanism via `downloadManager`.
+  3. Wired real-time usage metrics via `useUsageSummary` and external support/legal links via `expo-web-browser`.
+  4. Retained strict 2-step `DELETE` confirmation account wipe backed by Supabase auth admin RPC.
+
+### 50. Home Dashboard In-Progress Pipeline Banner & RPC Learning Stats
+- **Specification:** Give users immediate visibility into background audio generation and aggregate learning statistics.
+- **Decision:**
+  1. Added active jobs query polling every 5s for jobs in progress, rendering a pulsing green status banner that links directly to `processing/[jobId]`.
+  2. Added Quick Actions strip (Upload, Library, Downloads, Favorites) for one-tap navigation.
+  3. Wired learning stats strip to `supabase.rpc('get_learning_stats')` for accurate listening minutes and streaks.
+
+### 51. Library Multi-Criteria Sorting, Favorites Persistence, and Downloaded Filter
+- **Specification:** Enable efficient library navigation across large document sets.
+- **Decision:**
+  1. Added sort pill selector supporting Newest, Oldest, Name (alphabetical), and Duration.
+  2. Implemented favorites system backed by `document_favorites` table with star toggle on each document row.
+  3. Added "⭐ Favorites" and "⬇ Downloaded" filters to filter the library view in real time.
+
+### 52. Maestro End-to-End Test Suite for Core User Journeys
+- **Specification:** Provide repeatable, automated UI test flows for Android emulator and CI.
+- **Decision:**
+  1. Authored declarative Maestro test flows in `.maestro/`: `01_onboarding.yaml`, `02_sign_in.yaml`, `03_upload.yaml`, `04_player.yaml`, `05_settings.yaml`.
+  2. Tested flows cover end-to-end paths from cold launch, onboarding, authentication, document generation, player controls, to profile management.
+
+

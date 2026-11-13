@@ -1,0 +1,25 @@
+appId: com.zukai.app
+name: Zukai Sign In Flow
+---
+# 02 - Sign In with valid credentials
+- launchApp
+- waitForAnimationToEnd
+
+# Skip onboarding if already done
+- runFlow:
+    when:
+      visible: "Get Started"
+    file: .maestro/01_onboarding.yaml
+
+# Fill sign-in form
+- assertVisible: "Sign In"
+- tapOn: "Email"
+- inputText: "test@zukai.app"
+- tapOn: "Password"
+- inputText: "Test1234!"
+- tapOn: "Sign In"
+
+# Should arrive at Home
+- waitForAnimationToEnd
+- assertVisible: "WELCOME BACK"
+

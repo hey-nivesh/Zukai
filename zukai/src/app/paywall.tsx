@@ -1,8 +1,8 @@
 /**
- * ZUKAI — Paywall / Upgrade Screen
+ * ZUKAI — Paywall / Upgrade Screen (Phase 7: Trial handler wired)
  */
 import React, { useState } from 'react';
-import { View, StyleSheet, Pressable, ScrollView, Image } from 'react-native';
+import { View, StyleSheet, Pressable, ScrollView, Image, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { X, Check, Crown } from 'lucide-react-native';
@@ -10,6 +10,8 @@ import { MeshBackground } from '../components/MeshBackground';
 import { GlassCard } from '../components/GlassCard';
 import { Text } from '../components/Text';
 import { ShinyButton } from '../components/ShinyButton';
+import { useAuthStore } from '../lib/authStore';
+import { supabase } from '../lib/supabase';
 
 const C = {
   brandHero: '#92F702', canvasSurfaceRaised: '#132830', canvasSurfaceHighlight: '#18333D',
@@ -27,6 +29,27 @@ export default function PaywallScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [plan, setPlan] = useState<'monthly' | 'yearly'>('yearly');
+  const [isInterestLoading, setIsInterestLoading] = useState(false);
+
+  const handleStartTrial = async () => {
+    setIsInterestLoading(true);
+    try {
+      const userId = useAuthStore.getState().user?.id;
+      if (userId) {
+        await supabase
+          .from('upgrade_interests')
+          .upsert({ user_id: userId, plan_tier: 'pro' }, { onConflict: 'user_id' });
+      }
+      Alert.alert(
+        "You're on the waitlist! 🎉",
+        "We'll notify you when Pro launches. Thanks for your interest!",
+      );
+    } catch {
+      // silent — waitlist insert is best-effort
+    } finally {
+      setIsInterestLoading(false);
+    }
+  };
 
   return (
     <View style={s.root}>
@@ -77,7 +100,14 @@ export default function PaywallScreen() {
           )}
         </GlassCard>
 
-        <ShinyButton label="Start Free Trial" variant="primary" size="lg" fullWidth onPress={() => router.back()} />
+        <ShinyButton
+          label="Start Free Trial"
+          variant="primary"
+          size="lg"
+          fullWidth
+          loading={isInterestLoading}
+          onPress={handleStartTrial}
+        />
         <Text variant="footnote" rawColor={C.textTertiary} style={s.trialNote}>7-day free trial • No credit card required</Text>
         <Pressable onPress={() => {}}>
           <Text variant="subhead" rawColor={C.brandHero} style={{ fontWeight: '600', textAlign: 'center' }}>Restore Purchase</Text>
@@ -103,4 +133,3 @@ const s = StyleSheet.create({
   strikethrough: { textDecorationLine: 'line-through' },
   trialNote: { textAlign: 'center' },
 });
-

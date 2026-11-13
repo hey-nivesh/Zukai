@@ -14,6 +14,8 @@ import {
   Share,
   Dimensions,
   ActivityIndicator,
+  Alert,
+  Modal,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -30,12 +32,25 @@ import {
   Headphones,
   List,
   FileText,
+  Moon,
+  Repeat,
+  Download,
+  CheckCircle2,
+  Clock,
+  Sparkles,
 } from 'lucide-react-native';
 import { MeshBackground } from '../components/MeshBackground';
 import { GlassCard } from '../components/GlassCard';
 import { Text } from '../components/Text';
 import { Waveform } from '../components/Waveform';
+import { AudioFeedbackCard } from '../components/AudioFeedbackCard';
 import { usePlaybackStore } from '@/features/playback/playbackStore';
+import {
+  downloadTrackForOffline,
+  isTrackDownloaded,
+  deleteDownloadedTrack,
+} from '@/features/playback/downloadManager';
+import { useAuthStore } from '@/lib/authStore';
 
 const C = {
   brandHero: '#92F702',
@@ -52,7 +67,8 @@ const C = {
   divider: 'rgba(255,255,255,0.06)',
 };
 
-const SPEEDS = [0.75, 1.0, 1.25, 1.5, 2.0];
+const SPEEDS = [0.75, 1.0, 1.25, 1.5, 1.75, 2.0];
+const SLEEP_OPTIONS = [15, 30, 45, 60];
 
 function formatTime(millis: number): string {
   const totalSeconds = Math.max(0, Math.floor(millis / 1000));
@@ -67,6 +83,12 @@ export default function PlayerScreen() {
   const transcriptScrollRef = useRef<any>(null);
 
   const [activeTab, setActiveTab] = useState<'chapters' | 'transcript'>('chapters');
+  const [showSleepModal, setShowSleepModal] = useState(false);
+  const [bookmarkToast, setBookmarkToast] = useState<string | null>(null);
+  const [isDownloaded, setIsDownloaded] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const user = useAuthStore((s) => s.user);
 
   const {
     activeTrack,
@@ -78,6 +100,10 @@ export default function PlayerScreen() {
     positionMs,
     durationMs,
     speed,
+    hasEnded,
+    isRepeat,
+    sleepTimerMinutes,
+    sleepTimerRemainingSec,
     activeChapterIndex,
     activeSentenceIndex,
     togglePlayPause,
@@ -86,9 +112,19 @@ export default function PlayerScreen() {
     setSpeed,
     jumpToChapter,
     seekToSentence,
+    toggleRepeat,
+    setSleepTimer,
+    saveBookmark,
   } = usePlaybackStore();
 
   const progressFraction = durationMs > 0 ? Math.min(1, positionMs / durationMs) : 0;
+
+  // Check offline download status
+  useEffect(() => {
+    if (activeTrack?.id) {
+      isTrackDownloaded(activeTrack.id).then(setIsDownloaded).catch(() => {});
+    }
+  }, [activeTrack?.id]);
 
   // Auto-scroll transcript when sentence changes
   useEffect(() => {
@@ -105,6 +141,39 @@ export default function PlayerScreen() {
       await Share.share({
         message: `Listening to "${documentTitle}" on Zukai — Audio learning, supercharged!`,
       });
+    } catch {}
+  };
+
+  const handleToggleDownload = async () => {
+    if (!activeTrack) return;
+    try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      if (isDownloaded) {
+        await deleteDownloadedTrack(activeTrack.id);
+        setIsDownloaded(false);
+      } else {
+        setIsDownloading(true);
+        await downloadTrackForOffline(activeTrack, documentTitle, chapters, transcript);
+        setIsDownloaded(true);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+    } catch (err: any) {
+      Alert.alert('Download Error', err?.message || 'Unable to cache audio offline.');
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  const handleBookmark = async () => {
+    try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      const res = await saveBookmark();
+      if (res.success) {
+        setBookmarkToast(`Bookmarked at ${formatTime(positionMs)}`);
+        setTimeout(() => setBookmarkToast(null), 2500);
+      } else {
+        Alert.alert('Bookmark', res.error || 'Please sign in to save bookmarks');
+      }
     } catch {}
   };
 
@@ -196,14 +265,54 @@ export default function PlayerScreen() {
         <Text variant="caption" rawColor={C.textTertiary} style={s.nowPlaying}>
           NOW PLAYING
         </Text>
-        <Pressable
-          style={s.iconBtn}
-          onPress={handleShare}
-          hitSlop={12}
-          accessibilityLabel="Share track"
-        >
-          <Share2 size={20} color={C.textTertiary} strokeWidth={2} />
-        </Pressable>
+        <View style={s.headerActions}>
+          {/* Sleep Timer */}
+          <Pressable
+            style={s.headerActionBtn}
+            onPress={() => setShowSleepModal(true)}
+            hitSlop={8}
+            accessibilityLabel="Sleep timer"
+          >
+            <Moon
+              size={18}
+              color={sleepTimerMinutes ? C.brandHero : C.textTertiary}
+              strokeWidth={2}
+            />
+            {sleepTimerRemainingSec !== null && (
+              <View style={s.timerBadge}>
+                <Text variant="caption" rawColor={C.textInverse} style={s.timerBadgeText}>
+                  {Math.ceil(sleepTimerRemainingSec / 60)}m
+                </Text>
+              </View>
+            )}
+          </Pressable>
+
+          {/* Offline Download */}
+          <Pressable
+            style={s.headerActionBtn}
+            onPress={handleToggleDownload}
+            hitSlop={8}
+            accessibilityLabel="Download track offline"
+          >
+            {isDownloading ? (
+              <ActivityIndicator size="small" color={C.brandHero} />
+            ) : isDownloaded ? (
+              <CheckCircle2 size={18} color={C.brandHero} strokeWidth={2} />
+            ) : (
+              <Download size={18} color={C.textTertiary} strokeWidth={2} />
+            )}
+          </Pressable>
+
+          {/* Share / Export */}
+          <Pressable
+            style={s.headerActionBtn}
+            onPress={handleShare}
+            hitSlop={8}
+            accessibilityLabel="Share track"
+          >
+            <Share2 size={18} color={C.textTertiary} strokeWidth={2} />
+          </Pressable>
+        </View>
       </View>
 
       <ScrollView
@@ -229,7 +338,12 @@ export default function PlayerScreen() {
               Audio: {activeTrack?.format ? activeTrack.format.toUpperCase() : 'M4A'} • Zukai Neural AI
             </Text>
           </View>
-          <Pressable style={s.iconBtn} hitSlop={8}>
+          <Pressable
+            style={s.iconBtn}
+            hitSlop={8}
+            onPress={handleBookmark}
+            accessibilityLabel="Bookmark current moment"
+          >
             <Bookmark size={20} color={C.brandHero} strokeWidth={2} />
           </Pressable>
         </View>
@@ -283,8 +397,24 @@ export default function PlayerScreen() {
           })}
         </View>
 
-        {/* Player Controls (15s Skip, Play/Pause) */}
+        {/* Player Controls (Repeat, -15s, Play/Pause, +30s, Sleep Timer) */}
         <View style={s.controls}>
+          <Pressable
+            style={s.auxBtn}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              toggleRepeat();
+            }}
+            hitSlop={8}
+            accessibilityLabel={isRepeat ? 'Disable repeat' : 'Enable repeat'}
+          >
+            <Repeat
+              size={20}
+              color={isRepeat ? C.brandHero : C.textTertiary}
+              strokeWidth={2}
+            />
+          </Pressable>
+
           <Pressable
             style={s.controlBtn}
             onPress={() => skipBy(-15)}
@@ -317,11 +447,24 @@ export default function PlayerScreen() {
 
           <Pressable
             style={s.controlBtn}
-            onPress={() => skipBy(15)}
+            onPress={() => skipBy(30)}
             hitSlop={12}
-            accessibilityLabel="Skip 15 seconds forward"
+            accessibilityLabel="Skip 30 seconds forward"
           >
             <RotateCw size={28} color={C.textSecondary} strokeWidth={2} />
+          </Pressable>
+
+          <Pressable
+            style={s.auxBtn}
+            onPress={() => setShowSleepModal(true)}
+            hitSlop={8}
+            accessibilityLabel="Sleep timer"
+          >
+            <Moon
+              size={20}
+              color={sleepTimerMinutes ? C.brandHero : C.textTertiary}
+              strokeWidth={2}
+            />
           </Pressable>
         </View>
 
@@ -424,7 +567,89 @@ export default function PlayerScreen() {
             })}
           </ScrollView>
         )}
+
+        {/* Post-Playback Quality Feedback */}
+        {activeTrack && (hasEnded || (durationMs > 0 && positionMs / durationMs >= 0.95)) && (
+          <View style={{ width: '100%', marginTop: 20 }}>
+            <AudioFeedbackCard trackId={activeTrack.id} userId={user?.id} />
+          </View>
+        )}
       </ScrollView>
+
+      {/* Bookmark Toast */}
+      {bookmarkToast && (
+        <View style={s.toastPill}>
+          <Sparkles size={14} color={C.brandHero} />
+          <Text variant="caption" rawColor={C.textPrimary} style={{ fontWeight: '700' }}>
+            {bookmarkToast}
+          </Text>
+        </View>
+      )}
+
+      {/* Sleep Timer Modal */}
+      <Modal
+        visible={showSleepModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowSleepModal(false)}
+      >
+        <Pressable style={s.modalBackdrop} onPress={() => setShowSleepModal(false)}>
+          <GlassCard style={s.sleepModalCard}>
+            <Text variant="headline" rawColor={C.textPrimary} style={{ marginBottom: 4 }}>
+              Sleep Timer
+            </Text>
+            <Text variant="footnote" rawColor={C.textTertiary} style={{ marginBottom: 16 }}>
+              {sleepTimerRemainingSec
+                ? `Active: ${Math.ceil(sleepTimerRemainingSec / 60)} minutes remaining`
+                : 'Pause playback automatically after selected duration'}
+            </Text>
+
+            <View style={{ gap: 8, width: '100%' }}>
+              {SLEEP_OPTIONS.map((min) => (
+                <Pressable
+                  key={min}
+                  style={[s.sleepOptionBtn, sleepTimerMinutes === min && s.sleepOptionActive]}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    setSleepTimer(min);
+                    setShowSleepModal(false);
+                  }}
+                >
+                  <Clock size={16} color={sleepTimerMinutes === min ? C.textInverse : C.textSecondary} />
+                  <Text
+                    variant="subhead"
+                    rawColor={sleepTimerMinutes === min ? C.textInverse : C.textPrimary}
+                    style={{ fontWeight: '600', flex: 1 }}
+                  >
+                    {min} Minutes
+                  </Text>
+                </Pressable>
+              ))}
+
+              {sleepTimerMinutes !== null && (
+                <Pressable
+                  style={[
+                    s.sleepOptionBtn,
+                    { backgroundColor: 'rgba(255, 82, 82, 0.15)', borderColor: 'rgba(255, 82, 82, 0.3)' },
+                  ]}
+                  onPress={() => {
+                    setSleepTimer(null);
+                    setShowSleepModal(false);
+                  }}
+                >
+                  <Text
+                    variant="subhead"
+                    rawColor="#FF5252"
+                    style={{ fontWeight: '700', textAlign: 'center', width: '100%' }}
+                  >
+                    Turn Off Timer
+                  </Text>
+                </Pressable>
+              )}
+            </View>
+          </GlassCard>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
@@ -443,11 +668,83 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    marginBottom: 12,
+    paddingHorizontal: 16,
+    marginBottom: 8,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  headerActionBtn: {
+    width: 38,
+    height: 38,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  timerBadge: {
+    position: 'absolute',
+    top: 2,
+    right: 2,
+    backgroundColor: C.brandHero,
+    borderRadius: 8,
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+  },
+  timerBadgeText: {
+    fontSize: 9,
+    fontWeight: '800',
   },
   nowPlaying: { letterSpacing: 2, fontWeight: '700' },
-  iconBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
+  iconBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
+  auxBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
+  toastPill: {
+    position: 'absolute',
+    top: 70,
+    alignSelf: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: C.canvasSurfaceRaised,
+    borderColor: C.brandHero,
+    borderWidth: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    shadowColor: C.brandHero,
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
+    elevation: 8,
+    zIndex: 999,
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.75)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  sleepModalCard: {
+    width: '100%',
+    padding: 20,
+    borderRadius: 20,
+  },
+  sleepOptionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  sleepOptionActive: {
+    backgroundColor: C.brandHero,
+    borderColor: C.brandHero,
+  },
   scroll: { flex: 1 },
   content: { paddingHorizontal: 24, alignItems: 'center', gap: 16 },
   artworkCard: {

@@ -223,3 +223,20 @@ export const springs = {
 4. **Reduced Motion Accessibility (`prefers-reduced-motion`):**
    - When the user enables reduced motion in Android settings, all continuous ambient mesh pulses and idle button shimmers are deactivated, and transitions fall back to instant cross-fades (duration `150ms`).
 
+---
+
+## 8. Compact Spacing & EdTech Information Density (Phase 7 Standard)
+
+To provide an engaging, high-productivity learning dashboard without visual fluff or excessive void space, the interface enforces a compact layout rhythm:
+
+| Layout Attribute | Compact Token | Previous (Loose) | Specification & Rules |
+| :--- | :--- | :--- | :--- |
+| **Screen Horizontal Gutter** | `16dp` | `20–24dp` | Tighter side margin to maximize horizontal readable area on 360–412dp devices. |
+| **Card Internal Padding** | `12dp` (tight: `10dp`) | `16–20dp` | Maximizes content-to-chrome ratio inside GlassCards. |
+| **Element Gap (Siblings)** | `8dp` (tight: `6dp`) | `12–16dp` | Snug proximity between icon, label, and metadata badges. |
+| **Section Gap** | `16–20dp` | `32–40dp` | Denser visual grouping; eliminates excessive scroll fatigue. |
+| **List Row Height** | `56–64dp` | `72–80dp` | Allows 5+ items above the fold on standard mobile screens. |
+| **Minimum Touch Target** | `48 x 48dp` | `48 x 48dp` | Strictly preserved via `hitSlop` or padded bounding boxes. |
+| **Corner Radius Scale** | `14–16dp` | `20–24dp` | Sharper, modernized card geometry matching the compact edtech aesthetic. |
+
+

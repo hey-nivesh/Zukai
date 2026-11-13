@@ -11,6 +11,7 @@ import {
   ScrollView,
   Pressable,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -22,7 +23,19 @@ import Animated, {
   withSequence,
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Bell, Play, ChevronRight, FileText, Pause, RefreshCw } from 'lucide-react-native';
+import {
+  Bell,
+  Play,
+  ChevronRight,
+  FileText,
+  Pause,
+  RefreshCw,
+  Upload,
+  BookOpen,
+  Download,
+  Star,
+} from 'lucide-react-native';
+import { useQuery } from '@tanstack/react-query';
 import { MeshBackground } from '../../components/MeshBackground';
 import { GlassCard } from '../../components/GlassCard';
 import { Text } from '../../components/Text';
@@ -33,6 +46,7 @@ import { useLibrary } from '@/features/library/hooks/useLibrary';
 import { useUsageSummary } from '@/features/usage/hooks/useUsageSummary';
 import { useAuthStore } from '@/lib/authStore';
 import { usePlaybackStore } from '@/features/playback/playbackStore';
+import { supabase } from '@/lib/supabase';
 
 const C = {
   brandHero: '#92F702',
@@ -77,6 +91,32 @@ function formatDuration(seconds: number): string {
   return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
 }
 
+function formatMinutes(totalMinutes: number): string {
+  const h = Math.floor(totalMinutes / 60);
+  const m = totalMinutes % 60;
+  if (h === 0) return `${m}m`;
+  return `${h}h ${m}m`;
+}
+
+interface QuickAction {
+  key: string;
+  label: string;
+  icon: React.ReactNode;
+  onPress: () => void;
+}
+
+interface ActiveJob {
+  id: string;
+  status: string;
+  created_at: string;
+}
+
+interface LearningStats {
+  total_minutes: number;
+  tracks_completed: number;
+  streak_days: number;
+}
+
 export default function HomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -86,10 +126,61 @@ export default function HomeScreen() {
   const { data: libraryItems = [], isLoading: isLoadingLibrary, error: libraryError, refetch: refetchLibrary } = useLibrary();
   const { data: usageSummary, isLoading: isLoadingUsage } = useUsageSummary();
 
+  const [learningStats, setLearningStats] = useState<LearningStats | null>(null);
+
+  useEffect(() => {
+    supabase.rpc('get_learning_stats').then(({ data }) => {
+      if (data) setLearningStats(data as LearningStats);
+    });
+  }, []);
+
+  const { data: activeJobs = [] } = useQuery<ActiveJob[]>({
+    queryKey: ['active-jobs'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('audio_jobs')
+        .select('id, status, created_at')
+        .not('status', 'in', '(ready,failed,canceled)')
+        .order('created_at', { ascending: false });
+      return (data ?? []) as ActiveJob[];
+    },
+    refetchInterval: 5000,
+    staleTime: 0,
+  });
+
   const greetingName = profile?.full_name ? profile.full_name.split(' ')[0] : 'there';
   const readyItems = libraryItems.filter((i) => i.track && i.document.status === 'ready');
   const activeHeroItem = readyItems[0] || libraryItems[0];
   const isHeroPlaying = Boolean(activeHeroItem?.track && activeTrack?.id === activeHeroItem.track.id && isStorePlaying);
+
+  const quickActions: QuickAction[] = [
+    {
+      key: 'upload',
+      label: 'Upload',
+      icon: <Upload size={20} color={C.brandHero} strokeWidth={2} />,
+      onPress: () => router.push('/(tabs)/upload'),
+    },
+    {
+      key: 'library',
+      label: 'Library',
+      icon: <BookOpen size={20} color={C.brandHero} strokeWidth={2} />,
+      onPress: () => router.push('/(tabs)/library'),
+    },
+    {
+      key: 'downloads',
+      label: 'Downloads',
+      icon: <Download size={20} color={C.brandHero} strokeWidth={2} />,
+      onPress: () =>
+        Alert.alert('Downloads', 'Open the Library tab and tap the download icon on any track.'),
+    },
+    {
+      key: 'favorites',
+      label: 'Favorites',
+      icon: <Star size={20} color={C.brandHero} strokeWidth={2} />,
+      onPress: () =>
+        Alert.alert('Favorites', 'Tap the star icon on any document to favorite it.'),
+    },
+  ];
 
   return (
     <View style={styles.root}>
@@ -129,13 +220,52 @@ export default function HomeScreen() {
           </GlassCard>
           <GlassCard style={styles.statBox}>
             <Text variant="monoCounter" rawColor={C.brandHero}>
-              {(((usageSummary?.monthly_audio_minutes_used ?? 0) / 60) + 1.2).toFixed(1)}h
+              {formatMinutes(learningStats?.total_minutes ?? 0)}
             </Text>
             <Text variant="caption" rawColor={C.textTertiary} style={{ marginTop: 4 }}>
-              Hours Saved
+              Listened
+            </Text>
+          </GlassCard>
+          <GlassCard style={styles.statBox}>
+            <Text variant="monoCounter" rawColor={C.brandHero}>
+              {learningStats?.streak_days ?? 0}
+            </Text>
+            <Text variant="caption" rawColor={C.textTertiary} style={{ marginTop: 4 }}>
+              Day Streak
             </Text>
           </GlassCard>
         </View>
+
+        {/* Quick Actions Strip */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.quickActionsRow}
+          style={styles.quickActionsScroll}
+        >
+          {quickActions.map((action) => (
+            <Pressable key={action.key} style={styles.quickActionChip} onPress={action.onPress}>
+              {action.icon}
+              <Text variant="caption" rawColor={C.textSecondary} style={styles.quickActionLabel}>
+                {action.label}
+              </Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+
+        {/* In-Progress Jobs Banner */}
+        {activeJobs.length > 0 && (
+          <Pressable
+            style={styles.jobsBanner}
+            onPress={() => router.push(`/processing/${activeJobs[0].id}` as Parameters<typeof router.push>[0])}
+          >
+            <PulsingDot />
+            <Text variant="subhead" rawColor={C.textPrimary} style={{ flex: 1, marginLeft: 8 }}>
+              {`${activeJobs.length} explanation${activeJobs.length > 1 ? 's' : ''} generating…`}
+            </Text>
+            <ChevronRight size={16} color={C.textTertiary} />
+          </Pressable>
+        )}
 
         {/* Loading State */}
         {(isLoadingLibrary || isLoadingUsage) && (
@@ -163,7 +293,7 @@ export default function HomeScreen() {
 
         {/* Hero Player (if any track is available) */}
         {!isLoadingLibrary && activeHeroItem && (
-          <Pressable onPress={() => router.push('/player' as any)}>
+          <Pressable onPress={() => router.push('/player' as Parameters<typeof router.push>[0])}>
             <View style={styles.heroWrapper}>
               <LinearGradient
                 colors={['rgba(19,40,48,0.92)', 'rgba(9,22,27,0.98)']}
@@ -255,7 +385,7 @@ export default function HomeScreen() {
                 onPress={() => {
                   if (item.track && isReady) {
                     playTrack(item.track, item.document.title);
-                    router.push('/player' as any);
+                    router.push('/player' as Parameters<typeof router.push>[0]);
                   } else if (isFailed) {
                     router.push('/(tabs)/upload');
                   }
@@ -267,7 +397,7 @@ export default function HomeScreen() {
                     <FileText size={20} color={C.brandHero} strokeWidth={2} />
                   </View>
                   <View style={styles.docCenter}>
-                    <Text variant="headline" rawColor={C.textPrimary} numberOfLines={1}>
+                    <Text variant="headline" rawColor={C.textPrimary} numberOfLines={1} ellipsizeMode="tail">
                       {item.document.title}
                     </Text>
                     <Text variant="footnote" rawColor={C.textTertiary}>
@@ -312,14 +442,40 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#09161B' },
   scroll: { flex: 1 },
-  content: { paddingHorizontal: 20 },
-  topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
+  content: { paddingHorizontal: 16 },
+  topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
   topBarLeft: { flexDirection: 'row', alignItems: 'center' },
   greetingCaption: { letterSpacing: 1.2, fontWeight: '700', fontSize: 10 },
   greetingTitle: { marginTop: 1, fontWeight: '800' },
   bellBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255, 255, 255, 0.05)', borderWidth: 1.2, borderColor: 'rgba(255, 255, 255, 0.12)', alignItems: 'center', justifyContent: 'center' },
-  statsRow: { flexDirection: 'row', gap: 14, marginBottom: 24 },
+  statsRow: { flexDirection: 'row', gap: 14, marginBottom: 16 },
   statBox: { flex: 1, padding: 18, borderRadius: 20 },
+  quickActionsScroll: { marginBottom: 12 },
+  quickActionsRow: { gap: 8, paddingVertical: 4 },
+  quickActionChip: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 8,
+    backgroundColor: 'rgba(19,40,48,0.80)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.10)',
+    minWidth: 72,
+  },
+  quickActionLabel: { fontSize: 11 },
+  jobsBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 44,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    backgroundColor: 'rgba(19,40,48,0.90)',
+    borderWidth: 1,
+    borderColor: 'rgba(146,247,2,0.40)',
+    marginBottom: 12,
+  },
   loadingCard: { padding: 24, borderRadius: 16, alignItems: 'center', marginBottom: 20 },
   errorCard: { padding: 16, borderRadius: 16, marginBottom: 20, borderColor: 'rgba(255,82,82,0.3)' },
   retryBtn: { flexDirection: 'row', alignItems: 'center', gap: 6 },
@@ -335,7 +491,7 @@ const styles = StyleSheet.create({
   playCircle: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   docPressable: { marginBottom: 10 },
-  docCard: { flexDirection: 'row', alignItems: 'center', padding: 14, borderRadius: 16, gap: 12 },
+  docCard: { flexDirection: 'row', alignItems: 'center', padding: 12, borderRadius: 16, gap: 12 },
   docIcon: { width: 40, height: 40, borderRadius: 10, backgroundColor: C.canvasSurfaceRaised, alignItems: 'center', justifyContent: 'center' },
   docCenter: { flex: 1, gap: 2 },
   docRight: { alignItems: 'flex-end', gap: 6 },

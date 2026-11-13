@@ -1,0 +1,41 @@
+appId: com.zukai.app
+name: Zukai Settings Flow
+---
+# 05 - Settings: profile, language change, sign out
+- launchApp
+- waitForAnimationToEnd
+
+# Navigate to Settings
+- tapOn: "Settings"
+- assertVisible: "Settings"
+
+# Profile card visible
+- assertVisible: "Zukai Learner"
+
+# Edit name
+- tapOn: "Edit Profile Name"
+- waitForAnimationToEnd
+- clearText
+- inputText: "Test User"
+- tapOn: "Save"
+- waitForAnimationToEnd
+- assertVisible: "Test User"
+
+# Language switch
+- tapOn: "Language"
+- waitForAnimationToEnd
+- assertVisible: "English"
+- assertVisible: "Hinglish"
+- tapOn: "Hinglish"
+- waitForAnimationToEnd
+- assertVisible: "Hinglish"
+
+# Switch back
+- tapOn: "Language"
+- tapOn: "English"
+
+# Sign Out
+- tapOn: "Sign Out"
+- waitForAnimationToEnd
+- assertVisible: "Sign In"
+

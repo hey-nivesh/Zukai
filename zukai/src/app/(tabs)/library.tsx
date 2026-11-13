@@ -2,10 +2,10 @@
  * ZUKAI — Library Screen
  * Connected to live Supabase data layer via TanStack Query.
  * Supports keyword search, MIME-type and status filtering, rename/delete modals,
- * and direct audio player navigation.
+ * sort controls, favorites, downloads filter, and direct audio player navigation.
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -26,8 +26,7 @@ import {
   MoreVertical,
   Edit2,
   Trash2,
-  Play,
-  RotateCcw,
+  Star,
 } from 'lucide-react-native';
 import { MeshBackground } from '../../components/MeshBackground';
 import { GlassCard } from '../../components/GlassCard';
@@ -40,6 +39,9 @@ import { updateDocumentTitle } from '@/features/documents/api/documentsApi';
 import { useQueryClient } from '@tanstack/react-query';
 import { DocumentRow } from '@/features/documents/api/documentsApi';
 import { usePlaybackStore } from '@/features/playback/playbackStore';
+import { supabase } from '@/lib/supabase';
+import { useAuthStore } from '@/lib/authStore';
+import { getDownloadsIndex } from '@/features/playback/downloadManager';
 
 const C = {
   brandHero: '#92F702',
@@ -57,6 +59,14 @@ const C = {
 
 const FILTERS = ['All', 'PDF', 'Word', 'Audio Ready', 'Processing'];
 
+type SortBy = 'newest' | 'oldest' | 'name' | 'duration';
+const SORT_OPTIONS: { key: SortBy; label: string }[] = [
+  { key: 'newest', label: 'Newest' },
+  { key: 'oldest', label: 'Oldest' },
+  { key: 'name', label: 'Name' },
+  { key: 'duration', label: 'Duration' },
+];
+
 export default function LibraryScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -64,6 +74,17 @@ export default function LibraryScreen() {
   const { playTrack } = usePlaybackStore();
   const [activeFilter, setActiveFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Sort state
+  const [sortBy, setSortBy] = useState<SortBy>('newest');
+
+  // Favorites state
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
+
+  // Downloads state
+  const [showDownloadsOnly, setShowDownloadsOnly] = useState(false);
+  const [downloadedIds, setDownloadedIds] = useState<Set<string>>(new Set());
 
   const { data: libraryItems = [], isLoading, error, refetch } = useLibrary();
   const softDeleteMutation = useSoftDeleteDocument();
@@ -74,8 +95,51 @@ export default function LibraryScreen() {
   const [renameText, setRenameText] = useState('');
   const [isSubmittingRename, setIsSubmittingRename] = useState(false);
 
+  // Load favorites on mount
+  useEffect(() => {
+    const userId = useAuthStore.getState().user?.id;
+    if (userId) {
+      supabase
+        .from('document_favorites')
+        .select('document_id')
+        .eq('user_id', userId)
+        .then(({ data }) => {
+          if (data) setFavoriteIds(new Set(data.map((r: { document_id: string }) => r.document_id)));
+        });
+    }
+  }, []);
+
+  // Load downloaded track IDs on mount
+  useEffect(() => {
+    getDownloadsIndex().then((index) => {
+      setDownloadedIds(new Set(Object.keys(index)));
+    });
+  }, []);
+
+  async function toggleFavorite(documentId: string) {
+    const userId = useAuthStore.getState().user?.id;
+    if (!userId) return;
+    if (favoriteIds.has(documentId)) {
+      await supabase
+        .from('document_favorites')
+        .delete()
+        .eq('document_id', documentId)
+        .eq('user_id', userId);
+      setFavoriteIds((prev) => {
+        const n = new Set(prev);
+        n.delete(documentId);
+        return n;
+      });
+    } else {
+      await supabase
+        .from('document_favorites')
+        .insert({ document_id: documentId, user_id: userId });
+      setFavoriteIds((prev) => new Set([...prev, documentId]));
+    }
+  }
+
   const filteredItems = useMemo(() => {
-    return libraryItems.filter((item) => {
+    let items = libraryItems.filter((item) => {
       // 1. Search Query Filter
       if (searchQuery.trim().length > 0) {
         const query = searchQuery.toLowerCase();
@@ -103,7 +167,36 @@ export default function LibraryScreen() {
 
       return true;
     });
-  }, [libraryItems, searchQuery, activeFilter]);
+
+    // 3. Favorites filter
+    if (showFavoritesOnly) {
+      items = items.filter((item) => favoriteIds.has(item.document.id));
+    }
+
+    // 4. Downloads filter
+    if (showDownloadsOnly) {
+      items = items.filter((item) => item.track && downloadedIds.has(item.track.id));
+    }
+
+    // 5. Sort
+    items = [...items].sort((a, b) => {
+      if (sortBy === 'newest') {
+        return new Date(b.document.created_at).getTime() - new Date(a.document.created_at).getTime();
+      }
+      if (sortBy === 'oldest') {
+        return new Date(a.document.created_at).getTime() - new Date(b.document.created_at).getTime();
+      }
+      if (sortBy === 'name') {
+        return a.document.title.localeCompare(b.document.title);
+      }
+      if (sortBy === 'duration') {
+        return (b.track?.duration_seconds ?? 0) - (a.track?.duration_seconds ?? 0);
+      }
+      return 0;
+    });
+
+    return items;
+  }, [libraryItems, searchQuery, activeFilter, showFavoritesOnly, favoriteIds, showDownloadsOnly, downloadedIds, sortBy]);
 
   // Rename Handler
   const handleSaveRename = async () => {
@@ -114,8 +207,9 @@ export default function LibraryScreen() {
       setIsRenameOpen(false);
       setSelectedDoc(null);
       queryClient.invalidateQueries({ queryKey: ['library'] });
-    } catch (err: any) {
-      Alert.alert('Rename Error', err.message || 'Unable to update document title');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Unable to update document title';
+      Alert.alert('Rename Error', msg);
     } finally {
       setIsSubmittingRename(false);
     }
@@ -135,8 +229,9 @@ export default function LibraryScreen() {
             try {
               await softDeleteMutation.mutateAsync(doc.id);
               setSelectedDoc(null);
-            } catch (err: any) {
-              Alert.alert('Delete Error', err.message || 'Unable to delete document');
+            } catch (err: unknown) {
+              const msg = err instanceof Error ? err.message : 'Unable to delete document';
+              Alert.alert('Delete Error', msg);
             }
           },
         },
@@ -206,6 +301,70 @@ export default function LibraryScreen() {
               </Pressable>
             );
           })}
+
+          {/* Favorites pill */}
+          <Pressable
+            onPress={() => setShowFavoritesOnly((v) => !v)}
+            style={[
+              styles.chip,
+              showFavoritesOnly ? styles.chipSpecialActive : styles.chipInactive,
+            ]}
+          >
+            <Text
+              variant="footnote"
+              rawColor={showFavoritesOnly ? C.brandHero : C.textSecondary}
+              style={styles.chipText}
+            >
+              ⭐ Favorites
+            </Text>
+          </Pressable>
+
+          {/* Downloads pill */}
+          <Pressable
+            onPress={() => setShowDownloadsOnly((v) => !v)}
+            style={[
+              styles.chip,
+              showDownloadsOnly ? styles.chipSpecialActive : styles.chipInactive,
+            ]}
+          >
+            <Text
+              variant="footnote"
+              rawColor={showDownloadsOnly ? C.brandHero : C.textSecondary}
+              style={styles.chipText}
+            >
+              ⬇ Downloaded
+            </Text>
+          </Pressable>
+        </ScrollView>
+
+        {/* ── Sort Pills ── */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.sortRow}
+          style={styles.sortScroll}
+        >
+          {SORT_OPTIONS.map(({ key, label }) => {
+            const active = sortBy === key;
+            return (
+              <Pressable
+                key={key}
+                onPress={() => setSortBy(key)}
+                style={[
+                  styles.sortChip,
+                  active ? styles.sortChipActive : styles.sortChipInactive,
+                ]}
+              >
+                <Text
+                  variant="footnote"
+                  rawColor={active ? C.brandHero : C.textTertiary}
+                  style={styles.chipText}
+                >
+                  {label}
+                </Text>
+              </Pressable>
+            );
+          })}
         </ScrollView>
 
         {/* ── Loading Indicator ── */}
@@ -251,6 +410,7 @@ export default function LibraryScreen() {
             const durationLabel = item.track
               ? `${Math.round(item.track.duration_seconds / 60)} min audio`
               : `${item.document.page_count ?? 1} pages`;
+            const isFavorited = favoriteIds.has(item.document.id);
 
             return (
               <Pressable
@@ -258,7 +418,7 @@ export default function LibraryScreen() {
                 onPress={() => {
                   if (isReady && item.track) {
                     playTrack(item.track, item.document.title);
-                    router.push('/player' as any);
+                    router.push('/player' as Parameters<typeof router.push>[0]);
                   } else if (isFailed) {
                     router.push('/(tabs)/upload');
                   }
@@ -270,7 +430,7 @@ export default function LibraryScreen() {
                     <FileText size={20} color={C.brandHero} strokeWidth={2} />
                   </View>
                   <View style={styles.docCenter}>
-                    <Text variant="headline" rawColor={C.textPrimary} numberOfLines={1}>
+                    <Text variant="headline" rawColor={C.textPrimary} numberOfLines={1} ellipsizeMode="tail">
                       {item.document.title}
                     </Text>
                     <Text variant="footnote" rawColor={C.textTertiary}>
@@ -288,6 +448,22 @@ export default function LibraryScreen() {
                         {statusLabel}
                       </Text>
                     </View>
+                    {/* Star / Favorite button */}
+                    <Pressable
+                      onPress={(e) => {
+                        e.stopPropagation();
+                        void toggleFavorite(item.document.id);
+                      }}
+                      hitSlop={8}
+                      style={{ padding: 4 }}
+                    >
+                      <Star
+                        size={16}
+                        color={isFavorited ? C.brandHero : C.textTertiary}
+                        fill={isFavorited ? C.brandHero : 'none'}
+                        strokeWidth={2}
+                      />
+                    </Pressable>
                     <Pressable
                       onPress={(e) => {
                         e.stopPropagation();
@@ -403,7 +579,7 @@ export default function LibraryScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#09161B' },
   scroll: { flex: 1 },
-  content: { paddingHorizontal: 20 },
+  content: { paddingHorizontal: 16 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
   headerTitle: { fontWeight: '700' },
   filterIconBtn: {
@@ -429,20 +605,32 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   searchInput: { flex: 1, color: C.textPrimary, fontSize: 14 },
-  chipsScroll: { marginBottom: 20 },
+  chipsScroll: { marginBottom: 10 },
   chipsRow: { gap: 8 },
+  sortScroll: { marginBottom: 16 },
+  sortRow: { gap: 8 },
   chip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, borderWidth: 1 },
   chipActive: { backgroundColor: C.brandHero, borderColor: C.brandHero },
   chipInactive: { backgroundColor: C.canvasSurfaceRaised, borderColor: C.glassBorder },
+  chipSpecialActive: {
+    backgroundColor: 'rgba(146,247,2,0.12)',
+    borderColor: C.brandHero,
+  },
   chipText: { fontWeight: '600', fontSize: 12 },
+  sortChip: { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 20, borderWidth: 1 },
+  sortChipActive: {
+    backgroundColor: 'rgba(146,247,2,0.12)',
+    borderColor: C.brandHero,
+  },
+  sortChipInactive: { backgroundColor: C.canvasSurfaceRaised, borderColor: C.glassBorder },
   loadingCard: { padding: 24, borderRadius: 16, alignItems: 'center', marginBottom: 20 },
   errorCard: { padding: 16, borderRadius: 16, marginBottom: 20, borderColor: 'rgba(255,82,82,0.3)' },
   retryBtn: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  docPressable: { marginBottom: 10 },
-  docCard: { flexDirection: 'row', alignItems: 'center', padding: 14, borderRadius: 16, gap: 12 },
+  docPressable: { marginBottom: 8 },
+  docCard: { flexDirection: 'row', alignItems: 'center', padding: 12, borderRadius: 16, gap: 12, minHeight: 56 },
   docIcon: { width: 40, height: 40, borderRadius: 10, backgroundColor: C.canvasSurfaceRaised, alignItems: 'center', justifyContent: 'center' },
   docCenter: { flex: 1, gap: 2 },
-  docRight: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  docRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   statusChip: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 20, borderWidth: 1 },
   statusText: { fontSize: 10, fontWeight: '700', letterSpacing: 0.5 },
   modalBackdrop: {

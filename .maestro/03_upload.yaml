@@ -1,0 +1,32 @@
+appId: com.zukai.app
+name: Zukai Document Upload Flow
+---
+# 03 - Upload a PDF and reach the processing screen
+- launchApp
+- waitForAnimationToEnd
+
+# Navigate to Upload tab
+- tapOn: "Upload"
+
+# Upload screen should show
+- assertVisible: "Upload a Document"
+- tapOn: "Pick PDF or DOCX"
+
+# File picker opens (native) — select a test file from device storage
+# Note: The test file must be pre-placed on the emulator before running.
+# adb push test_assets/sample.pdf /storage/emulated/0/Download/sample.pdf
+
+- waitForAnimationToEnd
+
+# Options should be visible after file selection
+- assertVisible: "Language"
+- assertVisible: "English"
+- assertVisible: "Quick"
+
+# Start processing
+- tapOn: "Generate Explanation"
+- waitForAnimationToEnd
+
+# Should navigate to processing screen
+- assertVisible: "Generating"
+

@@ -1,0 +1,50 @@
+appId: com.zukai.app
+name: Zukai Player Flow
+---
+# 04 - Open player from home and verify controls
+- launchApp
+- waitForAnimationToEnd
+
+# From home, tap the first ready document hero play button
+- assertVisible: "CONTINUE LISTENING"
+- tapOn:
+    id: "hero-play-button"
+    optional: true
+
+# Or tap from library
+- tapOn: "Library"
+- waitForAnimationToEnd
+- tapOn:
+    index: 0
+    text: ".*"  # first item in library
+
+# Navigate to document detail
+- waitForAnimationToEnd
+- tapOn: "Listen to Full Audio"
+
+# Player should open
+- waitForAnimationToEnd
+- assertVisible: "1x"
+- assertVisible: "15"
+
+# Play/pause
+- tapOn:
+    id: "play-pause-btn"
+    optional: true
+
+# Speed change
+- tapOn: "1x"
+- waitForAnimationToEnd
+- assertVisible: "1.25x"
+- tapOn: "1.25x"
+
+# Skip forward
+- tapOn: "30"
+  optional: true
+
+# Check tabs
+- tapOn: "CHAPTERS"
+- waitForAnimationToEnd
+- tapOn: "TRANSCRIPT"
+- waitForAnimationToEnd
+

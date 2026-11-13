@@ -549,6 +549,113 @@ export interface Database {
         };
         Relationships: [];
       };
+      // ── Migration 012 ─────────────────────────────────────────────────────────
+      audio_feedback: {
+        Row: {
+          id: string;
+          track_id: string;
+          user_id: string;
+          is_positive: boolean;
+          rating: number;
+          reasons: string[];
+          comment: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          track_id: string;
+          user_id: string;
+          is_positive: boolean;
+          rating?: number;
+          reasons?: string[];
+          comment?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          track_id?: string;
+          user_id?: string;
+          is_positive?: boolean;
+          rating?: number;
+          reasons?: string[];
+          comment?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      // ── Migration 013 ─────────────────────────────────────────────────────────
+      bookmarks: {
+        Row: {
+          id: string;
+          user_id: string;
+          track_id: string;
+          position_seconds: number;
+          note: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          track_id: string;
+          position_seconds: number;
+          note?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          track_id?: string;
+          position_seconds?: number;
+          note?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      document_favorites: {
+        Row: {
+          id: string;
+          user_id: string;
+          document_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          document_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          document_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      upgrade_interests: {
+        Row: {
+          id: string;
+          user_id: string;
+          plan_tier: PlanTier;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          plan_tier?: PlanTier;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          plan_tier?: PlanTier;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -610,6 +717,14 @@ export interface Database {
           active_jobs_count: number;
           period_start: string;
           period_end: string;
+        };
+      };
+      get_learning_stats: {
+        Args: Record<string, never>;
+        Returns: {
+          total_minutes: number;
+          tracks_completed: number;
+          streak_days: number;
         };
       };
     };

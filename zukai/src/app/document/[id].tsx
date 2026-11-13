@@ -4,7 +4,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, ScrollView, Pressable, ActivityIndicator, Alert } from 'react-native';
+import { View, StyleSheet, ScrollView, Pressable, ActivityIndicator, Alert, Share } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronLeft, MoreVertical, Play, Share2, Trash2, Headphones } from 'lucide-react-native';
@@ -15,7 +15,7 @@ import { ShinyButton } from '../../components/ShinyButton';
 import { AudioFeedbackCard } from '../../components/AudioFeedbackCard';
 import { useDocument, useSoftDeleteDocument } from '@/features/documents/hooks/useDocuments';
 import { usePlaybackStore } from '@/features/playback/playbackStore';
-import { fetchTracksByDocumentId, fetchChapters, AudioTrackRow, ChapterRow } from '@/features/tracks/api/tracksApi';
+import { fetchTracksByDocumentId, fetchChapters, getSignedAudioUrl, AudioTrackRow, ChapterRow } from '@/features/tracks/api/tracksApi';
 import { useAuthStore } from '@/lib/authStore';
 
 const C = {
@@ -71,7 +71,26 @@ export default function DocumentDetailScreen() {
         if (isMounted) setIsLoadingTracks(false);
       });
 
-    return () => {
+    const [isSharing, setIsSharing] = useState(false);
+
+  const handleShare = async () => {
+    if (!activeTrack) return;
+    setIsSharing(true);
+    try {
+      const signedUrl = await getSignedAudioUrl(activeTrack.storage_path);
+      await Share.share({
+        title: doc?.title || 'Zukai Audio Explanation',
+        message: `🎧 Listen to this AI-generated audio explanation: "${doc?.title ?? 'Untitled'}" on Zukai.\n\n${signedUrl}`,
+        url: signedUrl,
+      });
+    } catch {
+      Alert.alert('Share failed', 'Could not generate a share link. Try again shortly.');
+    } finally {
+      setIsSharing(false);
+    }
+  };
+
+  return () => {
       isMounted = false;
     };
   }, [id]);
@@ -113,6 +132,25 @@ export default function DocumentDetailScreen() {
         },
       ]
     );
+  };
+
+  const [isSharing, setIsSharing] = useState(false);
+
+  const handleShare = async () => {
+    if (!activeTrack) return;
+    setIsSharing(true);
+    try {
+      const signedUrl = await getSignedAudioUrl(activeTrack.storage_path);
+      await Share.share({
+        title: doc?.title || 'Zukai Audio Explanation',
+        message: `🎧 Listen to this AI-generated audio explanation: "${doc?.title ?? 'Untitled'}" on Zukai.\n\n${signedUrl}`,
+        url: signedUrl,
+      });
+    } catch {
+      Alert.alert('Share failed', 'Could not generate a share link. Try again shortly.');
+    } finally {
+      setIsSharing(false);
+    }
   };
 
   return (
@@ -243,11 +281,12 @@ export default function DocumentDetailScreen() {
         {/* Action Buttons */}
         <View style={s.actionsRow}>
           <ShinyButton
-            label="Share Audio"
+            label={isSharing ? 'Sharing...' : 'Share Audio'}
             variant="secondary"
             size="md"
+            loading={isSharing}
             icon={<Share2 size={16} color={C.textPrimary} />}
-            onPress={() => {}}
+            onPress={handleShare}
             style={{ flex: 1 }}
           />
           <ShinyButton

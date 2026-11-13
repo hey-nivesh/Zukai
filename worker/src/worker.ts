@@ -113,7 +113,13 @@ export async function processJob(job: ClaimedJob): Promise<void> {
 
     await heartbeatJob(job.job_id, 65, 'Synthesizing voice narration and sentence timestamps');
 
-    const audioResult = await synthesizeSpeech(script.chapters, job.voice);
+    const audioResult = await synthesizeSpeech(script.chapters, job.voice, {
+      title: `Lesson: ${job.document_storage_path.split('/').pop() || 'Explanation'}`,
+      artist: 'Zukai',
+      album: 'Zukai Audio',
+      language: job.language,
+      bitrateKbps: 96,
+    });
 
     // Stage 4: Assembling & Mastering (progress 90 - 98)
     if (await isJobCanceled(job.job_id)) {
@@ -124,10 +130,17 @@ export async function processJob(job: ClaimedJob): Promise<void> {
 
     const targetAudioPath = `${job.owner_id}/${job.job_id}/final.${audioResult.format}`;
 
+    const contentType =
+      audioResult.format === 'mp3'
+        ? 'audio/mpeg'
+        : audioResult.format === 'm4a'
+        ? 'audio/mp4'
+        : 'audio/wav';
+
     const { error: uploadError } = await supabaseAdmin.storage
       .from('audio')
       .upload(targetAudioPath, audioResult.audioBuffer, {
-        contentType: audioResult.format === 'm4a' ? 'audio/mp4' : 'audio/wav',
+        contentType,
         upsert: true,
       });
 

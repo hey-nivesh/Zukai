@@ -74,17 +74,28 @@ export async function processJob(job) {
             throw new WorkerError(WORKER_ERROR_CODES.CANCELED, 'Job was canceled by user', false);
         }
         await heartbeatJob(job.job_id, 65, 'Synthesizing voice narration and sentence timestamps');
-        const audioResult = await synthesizeSpeech(script.chapters, job.voice);
+        const audioResult = await synthesizeSpeech(script.chapters, job.voice, {
+            title: `Lesson: ${job.document_storage_path.split('/').pop() || 'Explanation'}`,
+            artist: 'Zukai',
+            album: 'Zukai Audio',
+            language: job.language,
+            bitrateKbps: 96,
+        });
         // Stage 4: Assembling & Mastering (progress 90 - 98)
         if (await isJobCanceled(job.job_id)) {
             throw new WorkerError(WORKER_ERROR_CODES.CANCELED, 'Job was canceled by user', false);
         }
         await heartbeatJob(job.job_id, 92, 'Mastering audio loudness and uploading final track');
         const targetAudioPath = `${job.owner_id}/${job.job_id}/final.${audioResult.format}`;
+        const contentType = audioResult.format === 'mp3'
+            ? 'audio/mpeg'
+            : audioResult.format === 'm4a'
+                ? 'audio/mp4'
+                : 'audio/wav';
         const { error: uploadError } = await supabaseAdmin.storage
             .from('audio')
             .upload(targetAudioPath, audioResult.audioBuffer, {
-            contentType: audioResult.format === 'm4a' ? 'audio/mp4' : 'audio/wav',
+            contentType,
             upsert: true,
         });
         if (uploadError) {

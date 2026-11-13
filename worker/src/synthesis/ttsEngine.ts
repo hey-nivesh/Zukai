@@ -64,8 +64,70 @@ function createSyntheticAudioBuffer(durationSeconds: number): Buffer {
   return buffer;
 }
 
+export interface EncodeAudioOptions {
+  bitrateKbps?: number;
+  sampleRate?: number;
+  title?: string;
+  artist?: string;
+  album?: string;
+  language?: string;
+}
+
+/**
+ * Encodes audio buffer into broadcast-normalized MP3 with -16 LUFS, true peak -1.5 dB,
+ * mono CBR 96 kbps (configurable), 24 kHz or 44.1 kHz, and ID3v2 tags using ffmpeg libmp3lame.
+ */
+export async function normalizeAndEncodeMp3(
+  inputWavBuffer: Buffer,
+  options: EncodeAudioOptions = {}
+): Promise<{ buffer: Buffer; durationSeconds: number; bitrateKbps: number }> {
+  const bitrateKbps = options.bitrateKbps ?? 96;
+  const sampleRate = options.sampleRate ?? 24000;
+  const title = (options.title || 'Zukai Audio Explanation').replace(/"/g, '\\"');
+  const artist = (options.artist || 'Zukai').replace(/"/g, '\\"');
+  const album = (options.album || 'Zukai Audio').replace(/"/g, '\\"');
+  const language = options.language || 'eng';
+
+  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'zukai-mp3-'));
+  const inputWav = path.join(tmpDir, 'raw.wav');
+  const outputMp3 = path.join(tmpDir, 'final.mp3');
+
+  try {
+    await fs.writeFile(inputWav, inputWavBuffer);
+
+    // Loudness normalization to -16 LUFS broadcast standard, true peak -1.5 dB, 96kbps MP3
+    const ffmpegCmd = `ffmpeg -y -i "${inputWav}" -af "loudnorm=I=-16:TP=-1.5:LRA=11" -c:a libmp3lame -b:a ${bitrateKbps}k -ar ${sampleRate} -ac 1 -id3v2_version 3 -metadata title="${title}" -metadata artist="${artist}" -metadata album="${album}" -metadata language="${language}" "${outputMp3}"`;
+    await execAsync(ffmpegCmd);
+
+    const mp3Buffer = await fs.readFile(outputMp3);
+
+    // Run ffprobe to get exact duration
+    const probeCmd = `ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${outputMp3}"`;
+    const { stdout } = await execAsync(probeCmd);
+    const duration = parseFloat(stdout.trim()) || 0;
+
+    return {
+      buffer: mp3Buffer,
+      durationSeconds: Math.ceil(duration),
+      bitrateKbps,
+    };
+  } catch (err) {
+    logger.warn({ err }, 'ffmpeg libmp3lame execution unavailable or failed, returning raw PCM buffer');
+    return {
+      buffer: inputWavBuffer,
+      durationSeconds: Math.max(1, Math.round(inputWavBuffer.length / (22050 * 2))),
+      bitrateKbps,
+    };
+  } finally {
+    try {
+      await fs.rm(tmpDir, { recursive: true, force: true });
+    } catch {}
+  }
+}
+
 /**
  * Encodes audio buffer into normalized AAC (.m4a) with -16 LUFS and true peak -1.5 dB using ffmpeg.
+ * Kept for legacy/fallback audio track support.
  */
 export async function normalizeAndEncodeAac(
   inputWavBuffer: Buffer,
@@ -115,7 +177,8 @@ export async function normalizeAndEncodeAac(
  */
 export async function synthesizeSpeech(
   chapters: ScriptChapter[],
-  voice: string = 'alloy'
+  voice: string = 'alloy',
+  meta: EncodeAudioOptions = {}
 ): Promise<SynthesizedAudioResult> {
   const wordsPerMinute = 150;
   const msPerWord = (60 / wordsPerMinute) * 1000;
@@ -167,14 +230,25 @@ export async function synthesizeSpeech(
   const totalDurationSeconds = Math.max(1, Math.ceil(currentTimeMs / 1000));
   const wavBuffer = createSyntheticAudioBuffer(totalDurationSeconds);
 
-  // Normalize loudness and convert to AAC m4a
+  // Normalize loudness and convert to MP3 with -16 LUFS, CBR 96 kbps, and ID3v2 tags
   const { buffer: finalBuffer, durationSeconds: accurateDuration, bitrateKbps } =
-    await normalizeAndEncodeAac(wavBuffer, 128);
+    await normalizeAndEncodeMp3(wavBuffer, {
+      bitrateKbps: meta.bitrateKbps ?? 96,
+      sampleRate: 24000,
+      title: meta.title,
+      artist: meta.artist,
+      album: meta.album,
+      language: meta.language,
+    });
+
+  const isMp3 =
+    (finalBuffer.length >= 3 && finalBuffer[0] === 0x49 && finalBuffer[1] === 0x44 && finalBuffer[2] === 0x33) || // 'ID3' header
+    (finalBuffer.length >= 2 && finalBuffer[0] === 0xff && (finalBuffer[1] & 0xe0) === 0xe0); // MP3 sync word
 
   return {
     audioBuffer: finalBuffer,
     durationSeconds: accurateDuration || totalDurationSeconds,
-    format: finalBuffer.slice(4, 8).toString('utf-8') === 'ftyp' ? 'm4a' : 'wav',
+    format: isMp3 ? 'mp3' : finalBuffer.slice(4, 8).toString('utf-8') === 'ftyp' ? 'm4a' : 'wav',
     bitrateKbps,
     fileSizeBytes: finalBuffer.length,
     chapters: processedChapters,
