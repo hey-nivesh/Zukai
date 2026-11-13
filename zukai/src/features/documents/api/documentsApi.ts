@@ -5,6 +5,7 @@
  */
 
 import { supabase } from '@/lib/supabase';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Database } from '@/types/database';
 
 export type DocumentRow = Database['public']['Tables']['documents']['Row'];
@@ -22,7 +23,14 @@ export interface CreateDocumentParams {
  * Creates the document row in 'uploading' status prior to starting storage upload
  */
 export async function createDocumentRow(params: CreateDocumentParams): Promise<DocumentRow> {
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user: remoteUser } } = await supabase.auth.getUser();
+  let user = remoteUser;
+  if (!user) {
+    try {
+      const raw = await AsyncStorage.getItem('@zukai_dev_session');
+      if (raw) user = JSON.parse(raw)?.user;
+    } catch {}
+  }
   if (!user) throw new Error('UNAUTHORIZED: Must be signed in to upload documents');
 
   const { data, error } = await supabase

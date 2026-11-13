@@ -498,14 +498,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const { user, profile, session } = get();
     if (!user) return false;
 
-    try {
-      await supabase
+    // Fire and forget Supabase update with short timeout to avoid blocking navigation
+    Promise.race([
+      supabase
         .from('profiles')
         .update({ preferred_language: lang })
-        .eq('id', user.id);
-    } catch (e) {
+        .eq('id', user.id),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 2500)),
+    ]).catch((e) => {
       logger.warn('[AuthStore] Supabase update language error (fallback):', e);
-    }
+    });
 
     const updatedProfile: UserProfile = profile
       ? { ...profile, preferred_language: lang }
@@ -530,18 +532,23 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   completeOnboarding: async () => {
     const { user, profile, session } = get();
-    if (!user) return false;
+    if (!user) {
+      set({ status: 'ready' });
+      return true;
+    }
 
-    try {
-      await AsyncStorage.setItem(ONBOARDING_KEY, 'true');
+    await AsyncStorage.setItem(ONBOARDING_KEY, 'true').catch(() => {});
 
-      await supabase
+    // Fire and forget Supabase update with short timeout so UI is never blocked
+    Promise.race([
+      supabase
         .from('profiles')
         .update({ onboarding_completed: true })
-        .eq('id', user.id);
-    } catch (e) {
+        .eq('id', user.id),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 2500)),
+    ]).catch((e) => {
       logger.warn('[AuthStore] Supabase mark onboarding complete error (fallback):', e);
-    }
+    });
 
     const updatedProfile: UserProfile = profile
       ? { ...profile, onboarding_completed: true }
@@ -563,7 +570,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     await AsyncStorage.setItem(
       MOCK_SESSION_KEY,
       JSON.stringify({ user, session, profile: updatedProfile })
-    );
+    ).catch(() => {});
     return true;
   },
 

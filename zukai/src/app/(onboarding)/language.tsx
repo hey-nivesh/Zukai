@@ -22,12 +22,18 @@ export default function LanguageScreen() {
   const [isSaving, setIsSaving] = useState(false);
 
   const handleFinish = async () => {
+    if (isSaving) return;
     setIsSaving(true);
-    await auth.updateLanguage(lang);
-    await auth.completeOnboarding();
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    setIsSaving(false);
-    router.replace('/(tabs)/home' as any);
+    try {
+      await auth.updateLanguage(lang);
+      await auth.completeOnboarding();
+      Haptics.notificationAsync?.(Haptics.NotificationFeedbackType.Success).catch(() => {});
+    } catch (e) {
+      console.warn('[LanguageScreen] Failed during onboarding completion:', e);
+    } finally {
+      setIsSaving(false);
+      router.replace('/(tabs)/home' as any);
+    }
   };
 
   return (

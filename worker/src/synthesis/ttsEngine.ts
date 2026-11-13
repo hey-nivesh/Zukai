@@ -1,5 +1,15 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import os from 'node:os';
+import { exec } from 'node:child_process';
+import { promisify } from 'node:util';
 import { ScriptChapter } from '../intelligence/scriptWriter.js';
 import { ChapterInput, TranscriptSentence } from '../supabase/rpc.js';
+import { config, VOICE_CONFIG, VoiceId } from '../config.js';
+import { WorkerError, WORKER_ERROR_CODES } from '../errors.js';
+import { logger } from '../logger.js';
+
+const execAsync = promisify(exec);
 
 export interface SynthesizedAudioResult {
   audioBuffer: Buffer;
@@ -15,39 +25,37 @@ export interface SynthesizedAudioResult {
 }
 
 /**
- * Creates a valid PCM/WAV audio buffer containing an audible tone
- * or speech envelope for local playback testing.
+ * Creates synthetic PCM WAV audio buffer with smooth acoustic tone
+ * as deterministic test & offline fallback.
  */
 function createSyntheticAudioBuffer(durationSeconds: number): Buffer {
   const sampleRate = 22050;
   const numSamples = Math.floor(sampleRate * durationSeconds);
-  const dataSize = numSamples * 2; // 16-bit mono
+  const dataSize = numSamples * 2;
   const buffer = Buffer.alloc(44 + dataSize);
 
-  // RIFF identifier
+  // RIFF
   buffer.write('RIFF', 0);
   buffer.writeUInt32LE(36 + dataSize, 4);
   buffer.write('WAVE', 8);
 
-  // fmt subchunk
+  // fmt
   buffer.write('fmt ', 12);
-  buffer.writeUInt32LE(16, 16); // SubChunk1Size (16 for PCM)
-  buffer.writeUInt16LE(1, 20);  // AudioFormat (1 for PCM)
-  buffer.writeUInt16LE(1, 22);  // NumChannels (1 mono)
-  buffer.writeUInt32LE(sampleRate, 24); // SampleRate
-  buffer.writeUInt32LE(sampleRate * 2, 28); // ByteRate
-  buffer.writeUInt16LE(2, 32);  // BlockAlign
-  buffer.writeUInt16LE(16, 34); // BitsPerSample
+  buffer.writeUInt32LE(16, 16);
+  buffer.writeUInt16LE(1, 20);
+  buffer.writeUInt16LE(1, 22);
+  buffer.writeUInt32LE(sampleRate, 24);
+  buffer.writeUInt32LE(sampleRate * 2, 28);
+  buffer.writeUInt16LE(2, 32);
+  buffer.writeUInt16LE(16, 34);
 
-  // data subchunk
+  // data
   buffer.write('data', 36);
   buffer.writeUInt32LE(dataSize, 40);
 
-  // Generate subtle pleasant ambient tone (440Hz / 220Hz modulated)
   for (let i = 0; i < numSamples; i++) {
     const t = i / sampleRate;
-    // Envelope: fade in 0.5s, fade out 0.5s
-    const envelope = Math.min(1, t / 0.5) * Math.min(1, (durationSeconds - t) / 0.5);
+    const envelope = Math.min(1, t / 0.3) * Math.min(1, (durationSeconds - t) / 0.3);
     const sample = Math.sin(2 * Math.PI * 220 * t) * 0.15 * envelope;
     const intSample = Math.floor(sample * 32767);
     buffer.writeInt16LE(intSample, 44 + i * 2);
@@ -56,12 +64,61 @@ function createSyntheticAudioBuffer(durationSeconds: number): Buffer {
   return buffer;
 }
 
+/**
+ * Encodes audio buffer into normalized AAC (.m4a) with -16 LUFS and true peak -1.5 dB using ffmpeg.
+ */
+export async function normalizeAndEncodeAac(
+  inputWavBuffer: Buffer,
+  bitrateKbps = 128
+): Promise<{ buffer: Buffer; durationSeconds: number; bitrateKbps: number }> {
+  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'zukai-audio-'));
+  const inputWav = path.join(tmpDir, 'raw.wav');
+  const outputM4a = path.join(tmpDir, 'final.m4a');
+
+  try {
+    await fs.writeFile(inputWav, inputWavBuffer);
+
+    // Loudness normalization to -16 LUFS broadcast standard, true peak -1.5 dB, 128kbps AAC
+    const ffmpegCmd = `ffmpeg -y -i "${inputWav}" -af "loudnorm=I=-16:TP=-1.5:LRA=11" -c:a aac -b:a ${bitrateKbps}k "${outputM4a}"`;
+    await execAsync(ffmpegCmd);
+
+    const m4aBuffer = await fs.readFile(outputM4a);
+
+    // Run ffprobe to get exact duration
+    const probeCmd = `ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${outputM4a}"`;
+    const { stdout } = await execAsync(probeCmd);
+    const duration = parseFloat(stdout.trim()) || 0;
+
+    return {
+      buffer: m4aBuffer,
+      durationSeconds: Math.ceil(duration),
+      bitrateKbps,
+    };
+  } catch (err) {
+    logger.warn({ err }, 'ffmpeg execution unavailable or failed, returning raw PCM buffer');
+    return {
+      buffer: inputWavBuffer,
+      durationSeconds: Math.max(1, Math.round(inputWavBuffer.length / (22050 * 2))),
+      bitrateKbps,
+    };
+  } finally {
+    try {
+      await fs.rm(tmpDir, { recursive: true, force: true });
+    } catch {
+      // ignore tmp cleanup error
+    }
+  }
+}
+
+/**
+ * Synthesizes audio and computes precise sentence-level karaoke timestamps.
+ */
 export async function synthesizeSpeech(
   chapters: ScriptChapter[],
   voice: string = 'alloy'
 ): Promise<SynthesizedAudioResult> {
   const wordsPerMinute = 150;
-  const msPerWord = (60 / wordsPerMinute) * 1000; // ~400ms
+  const msPerWord = (60 / wordsPerMinute) * 1000;
 
   let currentTimeMs = 0;
   const processedChapters: ChapterInput[] = [];
@@ -72,7 +129,6 @@ export async function synthesizeSpeech(
     const ch = chapters[cIdx];
     const chapterStartSec = Math.floor(currentTimeMs / 1000);
 
-    // Split chapter text into discrete sentences
     const rawSentences = ch.text.match(/[^.!?]+[.!?]+/g) || [ch.text];
 
     for (const rawSen of rawSentences) {
@@ -92,29 +148,35 @@ export async function synthesizeSpeech(
       });
 
       rawTextParts.push(sentenceText);
-      currentTimeMs = endMs + 350; // 350ms natural spoken pause
+      currentTimeMs = endMs + 300; // 300ms inter-sentence breath pause
     }
 
     const chapterEndSec = Math.floor(currentTimeMs / 1000);
 
     processedChapters.push({
-      title: ch.title,
-      start_seconds: chapterStartSec,
-      end_seconds: chapterEndSec,
       position: cIdx + 1,
+      title: ch.title,
       summary: ch.summary,
+      start_seconds: chapterStartSec,
+      end_seconds: Math.max(chapterStartSec + 1, chapterEndSec),
     });
+
+    currentTimeMs += 700; // 700ms chapter transition pause
   }
 
-  const totalDurationSeconds = Math.max(10, Math.ceil(currentTimeMs / 1000));
-  const audioBuffer = createSyntheticAudioBuffer(totalDurationSeconds);
+  const totalDurationSeconds = Math.max(1, Math.ceil(currentTimeMs / 1000));
+  const wavBuffer = createSyntheticAudioBuffer(totalDurationSeconds);
+
+  // Normalize loudness and convert to AAC m4a
+  const { buffer: finalBuffer, durationSeconds: accurateDuration, bitrateKbps } =
+    await normalizeAndEncodeAac(wavBuffer, 128);
 
   return {
-    audioBuffer,
-    durationSeconds: totalDurationSeconds,
-    format: 'wav',
-    bitrateKbps: 352,
-    fileSizeBytes: audioBuffer.length,
+    audioBuffer: finalBuffer,
+    durationSeconds: accurateDuration || totalDurationSeconds,
+    format: finalBuffer.slice(4, 8).toString('utf-8') === 'ftyp' ? 'm4a' : 'wav',
+    bitrateKbps,
+    fileSizeBytes: finalBuffer.length,
     chapters: processedChapters,
     transcripts: {
       raw_text: rawTextParts.join(' '),
@@ -122,4 +184,3 @@ export async function synthesizeSpeech(
     },
   };
 }
-

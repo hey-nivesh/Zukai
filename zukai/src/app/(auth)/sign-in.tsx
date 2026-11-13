@@ -393,20 +393,21 @@ const s = StyleSheet.create({
   inputContainerFocused: {
     borderColor: C.borderFocused,
     backgroundColor: C.fieldBgFocused,
-    shadowColor: C.brandHero,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
   },
   inputContainerError: {
     borderColor: C.error,
   },
   input: {
     flex: 1,
+    height: '100%',
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '500',
+    paddingVertical: 0,
+    paddingHorizontal: 0,
+    margin: 0,
+    textAlignVertical: 'center',
+    includeFontPadding: false,
   },
   eyeBtn: {
     padding: 4,

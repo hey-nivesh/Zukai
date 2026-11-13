@@ -6,101 +6,101 @@
 -- ==============================================================================
 
 -- 1. Upgrade public.doc_status enum safely within a single transaction
-do $$
-begin
+DO $$
+BEGIN
   -- Check if 'uploading' value already exists in doc_status
-  if not exists (
-    select 1
-    from pg_enum
-    where enumtypid = 'public.doc_status'::regtype
-      and enumlabel = 'uploading'
-  ) then
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_enum
+    WHERE enumtypid = 'public.doc_status'::regtype
+      AND enumlabel = 'uploading'
+  ) THEN
     -- Recreate enum cleanly to bypass Postgres 55P04 uncommitted enum value limitation
-    drop index if exists public.idx_documents_status_deleted;
-    alter table public.documents alter column status drop default;
-    alter table public.documents alter column status type text;
-    drop type public.doc_status cascade;
-    create type public.doc_status as enum ('uploading', 'uploaded', 'ready', 'failed', 'deleted');
-    alter table public.documents alter column status type public.doc_status using status::public.doc_status;
-    create index if not exists idx_documents_status_deleted on public.documents (status, deleted_at);
-  end if;
-end $$;
+    DROP INDEX IF EXISTS public.idx_documents_status_deleted;
+    ALTER TABLE public.documents ALTER COLUMN status DROP DEFAULT;
+    ALTER TABLE public.documents ALTER COLUMN status TYPE text;
+    DROP TYPE public.doc_status CASCADE;
+    CREATE TYPE public.doc_status AS ENUM ('uploading', 'uploaded', 'ready', 'failed', 'deleted');
+    ALTER TABLE public.documents ALTER COLUMN status TYPE public.doc_status USING status::public.doc_status;
+    CREATE INDEX IF NOT EXISTS idx_documents_status_deleted ON public.documents (status, deleted_at);
+  END IF;
+END $$;
 
 -- 2. Set default status of new document rows to 'uploading'
-alter table public.documents alter column status set default 'uploading';
+ALTER TABLE public.documents ALTER COLUMN status SET DEFAULT 'uploading';
 
 -- 3. Public RPC: complete_document_upload
 -- Validates that the storage object exists in storage.objects and matches file_size_bytes
-create or replace function public.complete_document_upload(p_document_id uuid)
-returns public.documents
-language plpgsql
-security definer
-set search_path = ''
-as $$
-declare
-  v_user_id uuid := (select auth.uid());
+CREATE OR REPLACE FUNCTION public.complete_document_upload(p_document_id uuid)
+RETURNS public.documents
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+  v_user_id uuid := (SELECT auth.uid());
   v_doc public.documents;
   v_storage_size bigint;
   v_object_exists boolean;
-begin
-  if v_user_id is null then
-    raise exception 'UNAUTHORIZED: Authentication required' using errcode = 'P0006';
-  end if;
+BEGIN
+  IF v_user_id IS NULL THEN
+    RAISE EXCEPTION 'UNAUTHORIZED: Authentication required' USING errcode = 'P0006';
+  END IF;
 
-  select * into v_doc
-  from public.documents
-  where id = p_document_id;
+  SELECT * INTO v_doc
+  FROM public.documents
+  WHERE id = p_document_id;
 
-  if not found then
-    raise exception 'DOCUMENT_NOT_FOUND: Document does not exist' using errcode = 'P0009';
-  end if;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'DOCUMENT_NOT_FOUND: Document does not exist' USING errcode = 'P0009';
+  END IF;
 
   -- Only document owner can complete upload
-  if v_doc.owner_id != v_user_id then
-    raise exception 'ACCESS_DENIED: Only the document creator can complete the upload'
-      using errcode = 'P0012';
-  end if;
+  IF v_doc.owner_id != v_user_id THEN
+    RAISE EXCEPTION 'ACCESS_DENIED: Only the document creator can complete the upload'
+      USING errcode = 'P0012';
+  END IF;
 
-  if v_doc.status::text != 'uploading' then
-    raise exception 'INVALID_STATUS: Document is not in uploading state (current: %)', v_doc.status
-      using errcode = 'P0016';
-  end if;
+  IF v_doc.status::text != 'uploading' THEN
+    RAISE EXCEPTION 'INVALID_STATUS: Document is not in uploading state (current: %)', v_doc.status
+      USING errcode = 'P0016';
+  END IF;
 
   -- Check existence of storage object in storage.objects
-  select exists (
-    select 1
-    from storage.objects
-    where bucket_id = 'uploads'
-      and name = v_doc.storage_path
-  ) into v_object_exists;
+  SELECT EXISTS (
+    SELECT 1
+    FROM storage.objects
+    WHERE bucket_id = 'uploads'
+      AND name = v_doc.storage_path
+  ) INTO v_object_exists;
 
-  if not v_object_exists then
-    raise exception 'STORAGE_OBJECT_NOT_FOUND: File % does not exist in uploads bucket', v_doc.storage_path
-      using errcode = 'P0017';
-  end if;
+  IF NOT v_object_exists THEN
+    RAISE EXCEPTION 'STORAGE_OBJECT_NOT_FOUND: File % does not exist in uploads bucket', v_doc.storage_path
+      USING errcode = 'P0017';
+  END IF;
 
   -- Verify size if available in metadata
-  select coalesce((metadata->>'size')::bigint, 0) into v_storage_size
-  from storage.objects
-  where bucket_id = 'uploads'
-    and name = v_doc.storage_path
-  limit 1;
+  SELECT coalesce((metadata->>'size')::bigint, 0) INTO v_storage_size
+  FROM storage.objects
+  WHERE bucket_id = 'uploads'
+    AND name = v_doc.storage_path
+  LIMIT 1;
 
-  if v_storage_size > 0 and abs(v_storage_size - v_doc.file_size_bytes) > 2048 then
-    raise exception 'SIZE_MISMATCH: Uploaded object size (% bytes) does not match record (% bytes)',
+  IF v_storage_size > 0 AND abs(v_storage_size - v_doc.file_size_bytes) > 2048 THEN
+    RAISE EXCEPTION 'SIZE_MISMATCH: Uploaded object size (% bytes) does not match record (% bytes)',
       v_storage_size, v_doc.file_size_bytes
-      using errcode = 'P0018';
-  end if;
+      USING errcode = 'P0018';
+  END IF;
 
   -- Update document status to 'uploaded'
-  update public.documents
-  set status = 'uploaded',
+  UPDATE public.documents
+  SET status = 'uploaded',
       updated_at = now()
-  where id = p_document_id
-  returning * into v_doc;
+  WHERE id = p_document_id
+  RETURNING * INTO v_doc;
 
   -- Audit log
-  perform private.write_audit_log(
+  PERFORM private.write_audit_log(
     v_user_id,
     v_doc.org_id,
     'document.uploaded',
@@ -113,28 +113,28 @@ begin
     )
   );
 
-  return v_doc;
-end;
+  RETURN v_doc;
+END;
 $$;
 
 -- 4. Maintenance Function: Cleanup stale uploads (Cron-ready)
-create or replace function private.cleanup_stale_uploads(p_hours int default 4)
-returns table (document_id uuid, storage_path text)
-language plpgsql
-security definer
-set search_path = ''
-as $$
-begin
-  return query
-  with stale_docs as (
-    update public.documents
-    set status = 'failed',
+CREATE OR REPLACE FUNCTION private.cleanup_stale_uploads(p_hours int DEFAULT 4)
+RETURNS TABLE (document_id uuid, storage_path text)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+BEGIN
+  RETURN query
+  WITH stale_docs AS (
+    UPDATE public.documents
+    SET status = 'failed',
         error_code = 'UPLOAD_TIMEOUT',
         updated_at = now()
-    where status::text = 'uploading'
-      and created_at < (now() - (p_hours || ' hours')::interval)
-    returning id, public.documents.storage_path
+    WHERE status::text = 'uploading'
+      AND created_at < (now() - (p_hours || ' hours')::interval)
+    RETURNING id, public.documents.storage_path
   )
-  select id as document_id, stale_docs.storage_path from stale_docs;
-end;
+  SELECT id AS document_id, stale_docs.storage_path FROM stale_docs;
+END;
 $$;

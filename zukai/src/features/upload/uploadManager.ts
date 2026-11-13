@@ -90,7 +90,14 @@ export const useUploadStore = create<UploadState>((set, get) => ({
 
     try {
       // 2. Refresh / retrieve session token
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session: remoteSession } } = await supabase.auth.getSession();
+      let session = remoteSession;
+      if (!session) {
+        try {
+          const raw = await AsyncStorage.getItem('@zukai_dev_session');
+          if (raw) session = JSON.parse(raw)?.session;
+        } catch {}
+      }
       if (!session) throw new Error('UNAUTHORIZED: Please sign in before uploading.');
 
       const userId = session.user.id;

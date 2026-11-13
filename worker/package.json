@@ -9,15 +9,23 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
-    "test": "node --test"
+    "test": "tsx --test test/*.test.ts",
+    "eval": "tsx eval/runEval.ts",
+    "eval:full": "tsx eval/evalRunner.ts",
+    "eval:smoke": "tsx eval/evalRunner.ts --smoke",
+    "eval:gate": "tsx eval/evalRunner.ts --gate"
   },
   "dependencies": {
     "@fastify/cors": "^10.0.1",
     "@supabase/supabase-js": "^2.45.4",
+    "@types/adm-zip": "^0.5.8",
+    "adm-zip": "^0.6.1",
     "dotenv": "^16.4.5",
     "fastify": "^5.0.0",
     "mammoth": "^1.8.0",
     "pdf-parse": "^1.1.1",
+    "pino": "^10.4.0",
+    "pino-pretty": "^13.2.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {

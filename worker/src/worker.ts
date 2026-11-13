@@ -8,72 +8,138 @@ import {
   ClaimedJob,
 } from './supabase/rpc.js';
 import { extractDocumentContent } from './extraction/extractor.js';
-import { generateExplanationScript } from './intelligence/scriptWriter.js';
+import { generateExplanationScript, PROMPT_VERSION } from './intelligence/scriptWriter.js';
 import { synthesizeSpeech } from './synthesis/ttsEngine.js';
+import { mapErrorToCode, WorkerError, WORKER_ERROR_CODES } from './errors.js';
+import { logger } from './logger.js';
 
 let isRunning = false;
+let activeJobCount = 0;
+let shouldStop = false;
 
+/**
+ * Checks whether user canceled job mid-flight.
+ */
+async function isJobCanceled(jobId: string): Promise<boolean> {
+  const { data } = await supabaseAdmin
+    .from('audio_jobs')
+    .select('status')
+    .eq('id', jobId)
+    .single();
+
+  return data?.status === 'canceled';
+}
+
+/**
+ * Single job lifecycle state machine:
+ * queued -> extracting (0-20) -> scripting (20-55) -> voicing (55-90) -> assembling (90-98) -> ready (100)
+ */
 export async function processJob(job: ClaimedJob): Promise<void> {
-  console.log(`[Worker] Claimed job ${job.job_id} for doc ${job.document_id} (${job.language}, ${job.depth})`);
+  logger.info({ jobId: job.job_id, docId: job.document_id, language: job.language, depth: job.depth }, 'Claimed audio job');
+
+  // Start visibility heartbeat timer
+  const heartbeatTimer = setInterval(async () => {
+    try {
+      await heartbeatJob(job.job_id);
+    } catch (e) {
+      logger.warn({ err: e, jobId: job.job_id }, 'Failed to send visibility heartbeat');
+    }
+  }, config.HEARTBEAT_INTERVAL_MS);
 
   try {
-    // 1. Download document from Supabase Storage (uploads bucket)
-    await heartbeatJob(job.job_id, 15, 'Extracting text and structure from document');
+    // Stage 1: Extraction (progress 0 - 20)
+    await heartbeatJob(job.job_id, 10, 'Downloading original document');
+
+    if (await isJobCanceled(job.job_id)) {
+      throw new WorkerError(WORKER_ERROR_CODES.CANCELED, 'Job was canceled by user', false);
+    }
 
     const { data: fileBlob, error: downloadError } = await supabaseAdmin.storage
       .from('uploads')
       .download(job.document_storage_path);
 
     if (downloadError || !fileBlob) {
-      throw new Error(`STORAGE_DOWNLOAD_FAILED: Could not download ${job.document_storage_path} (${downloadError?.message})`);
+      throw new WorkerError(
+        WORKER_ERROR_CODES.STORAGE_ERROR,
+        `Could not download original document from uploads storage.`,
+        true
+      );
     }
 
     const arrayBuffer = await fileBlob.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // 2. Extract Text Content
+    await heartbeatJob(job.job_id, 18, 'Extracting and cleaning text sections');
+
     const extracted = await extractDocumentContent(
       buffer,
       job.mime_type,
       job.document_storage_path
     );
 
-    console.log(`[Worker] Extracted ${extracted.wordCount} words across ${extracted.pageCount} pages.`);
+    // Update document table with verified stats
+    await supabaseAdmin
+      .from('documents')
+      .update({
+        page_count: extracted.metadata.page_count,
+        word_count: extracted.metadata.word_count,
+        source_language: extracted.metadata.detected_language,
+      })
+      .eq('id', job.document_id);
 
-    // 3. Generate Spoken Script via Gemini AI
-    await heartbeatJob(job.job_id, 45, 'Synthesizing plain spoken explanation with Gemini');
+    // Stage 2: Scripting (progress 20 - 55)
+    if (await isJobCanceled(job.job_id)) {
+      throw new WorkerError(WORKER_ERROR_CODES.CANCELED, 'Job was canceled by user', false);
+    }
+
+    await heartbeatJob(job.job_id, 25, 'Generating outline and explanatory analogies');
+
+    const combinedText = extracted.sections.map((s) => s.text).join('\n\n');
+    const originalFilename = job.document_storage_path.split('/').pop() || 'Document';
 
     const script = await generateExplanationScript(
-      extracted.text,
+      combinedText,
       job.language,
       job.depth,
-      job.document_storage_path.split('/').pop() || 'Document'
+      originalFilename
     );
 
-    console.log(`[Worker] Generated script with ${script.chapters.length} chapters.`);
+    await heartbeatJob(job.job_id, 50, 'Drafting punchy spoken sentences and takeaways');
 
-    // 4. Synthesize Audio & Align Karaoke Timestamps
-    await heartbeatJob(job.job_id, 75, 'Synthesizing neural voice narration and timestamps');
+    // Stage 3: Voicing (progress 55 - 90)
+    if (await isJobCanceled(job.job_id)) {
+      throw new WorkerError(WORKER_ERROR_CODES.CANCELED, 'Job was canceled by user', false);
+    }
+
+    await heartbeatJob(job.job_id, 65, 'Synthesizing voice narration and sentence timestamps');
 
     const audioResult = await synthesizeSpeech(script.chapters, job.voice);
 
-    // 5. Upload Mastered Audio to Supabase Storage (audio bucket)
-    await heartbeatJob(job.job_id, 90, 'Uploading audio and mastering chapter transcripts');
+    // Stage 4: Assembling & Mastering (progress 90 - 98)
+    if (await isJobCanceled(job.job_id)) {
+      throw new WorkerError(WORKER_ERROR_CODES.CANCELED, 'Job was canceled by user', false);
+    }
+
+    await heartbeatJob(job.job_id, 92, 'Mastering audio loudness and uploading final track');
 
     const targetAudioPath = `${job.owner_id}/${job.job_id}/final.${audioResult.format}`;
 
     const { error: uploadError } = await supabaseAdmin.storage
       .from('audio')
       .upload(targetAudioPath, audioResult.audioBuffer, {
-        contentType: audioResult.format === 'wav' ? 'audio/wav' : 'audio/mp4',
+        contentType: audioResult.format === 'm4a' ? 'audio/mp4' : 'audio/wav',
         upsert: true,
       });
 
     if (uploadError) {
-      throw new Error(`AUDIO_UPLOAD_FAILED: ${uploadError.message}`);
+      throw new WorkerError(
+        WORKER_ERROR_CODES.STORAGE_ERROR,
+        `Failed to store synthesized audio track: ${uploadError.message}`,
+        true
+      );
     }
 
-    // 6. Complete Job via Atomic RPC
+    // Stage 5: Ready (progress 100)
     await completeJob({
       jobId: job.job_id,
       storagePath: targetAudioPath,
@@ -83,59 +149,93 @@ export async function processJob(job: ClaimedJob): Promise<void> {
       fileSizeBytes: audioResult.fileSizeBytes,
       chapters: audioResult.chapters,
       transcripts: audioResult.transcripts,
-      inputTokens: Math.floor(extracted.wordCount * 1.3),
-      outputTokens: Math.floor(script.totalWords * 1.3),
-      ttsCharacters: script.chapters.reduce((acc, c) => acc + c.text.length, 0),
-      costMicros: 4500, // estimated $0.0045 compute
+      inputTokens: script.inputTokens,
+      outputTokens: script.outputTokens,
+      ttsCharacters: script.chapters.reduce((sum, c) => sum + c.text.length, 0),
+      costMicros: script.costMicros,
     });
 
-    console.log(`[Worker] Job ${job.job_id} successfully COMPLETED (${audioResult.durationSeconds}s audio).`);
-  } catch (err: any) {
-    console.error(`[Worker] Job ${job.job_id} FAILED:`, err.message);
-    const errorCode = err.message.split(':')[0] || 'PROCESSING_ERROR';
-    await failJob(job.job_id, errorCode, err.message).catch((failErr) => {
-      console.error(`[Worker] failJob RPC also failed:`, failErr);
-    });
+    // Record quality metadata for telemetry, prompt tracking, and audit
+    try {
+      await supabaseAdmin
+        .from('audio_jobs')
+        .update({
+          quality_meta: {
+            prompt_version: PROMPT_VERSION,
+            model: config.GEMINI_SCRIPT_MODEL,
+            voice: job.voice,
+            normalizer_version: '1.0.0',
+            duration_seconds: audioResult.durationSeconds,
+            chapters_count: audioResult.chapters.length,
+          },
+        })
+        .eq('id', job.job_id);
+    } catch (metaErr) {
+      logger.warn({ metaErr, jobId: job.job_id }, 'Failed to persist quality_meta to audio_job');
+    }
+
+    logger.info({ jobId: job.job_id, duration: audioResult.durationSeconds }, 'Job completed successfully');
+  } catch (err: unknown) {
+    const errorDetails = mapErrorToCode(err);
+    logger.error({ jobId: job.job_id, code: errorDetails.code, msg: errorDetails.message }, 'Job failed');
+
+    // Atomically report failure to database queue RPC
+    try {
+      await failJob(job.job_id, errorDetails.code, errorDetails.message);
+    } catch (failRpcErr) {
+      logger.error({ failRpcErr, jobId: job.job_id }, 'Failed to invoke fail_job RPC');
+    }
+  } finally {
+    clearInterval(heartbeatTimer);
   }
 }
 
-export async function runWorkerPollCycle(): Promise<boolean> {
-  try {
-    const job = await claimNextJob(600);
-    if (job) {
-      await processJob(job);
-      return true; // Had work
-    }
-    return false; // Queue empty
-  } catch (err: any) {
-    // If Supabase is unreachable or no job, log and continue
-    if (!err.message?.includes('claimNextJob')) {
-      console.warn('[Worker] Poll cycle error:', err.message);
-    }
-    return false;
-  }
-}
-
-export function startWorkerLoop(): void {
+/**
+ * Worker polling loop with concurrency limiter and exponential backoff
+ */
+export async function startWorkerLoop(): Promise<void> {
   if (isRunning) return;
   isRunning = true;
-  console.log(`[Worker] Starting background polling loop (interval: ${config.POLL_INTERVAL_MS}ms)`);
+  shouldStop = false;
 
-  const loop = async () => {
-    while (isRunning) {
-      const hadWork = await runWorkerPollCycle();
-      const delay = hadWork ? 500 : config.POLL_INTERVAL_MS;
-      await new Promise((res) => setTimeout(res, delay));
+  logger.info({ concurrency: config.CONCURRENCY }, 'Worker polling loop started');
+
+  while (!shouldStop) {
+    if (activeJobCount >= config.CONCURRENCY) {
+      await new Promise((r) => setTimeout(r, 1000));
+      continue;
     }
-  };
 
-  loop().catch((err) => {
-    console.error('[Worker] Fatal loop crash:', err);
-    isRunning = false;
-  });
-}
+    try {
+      const job = await claimNextJob(config.VISIBILITY_TIMEOUT_SECONDS);
+      if (job) {
+        activeJobCount++;
+        processJob(job)
+          .catch((err) => {
+            logger.error({ err, jobId: job.job_id }, 'Unhandled exception in processJob');
+          })
+          .finally(() => {
+            activeJobCount--;
+          });
+      } else {
+        // Sleep when queue is empty
+        await new Promise((r) => setTimeout(r, config.POLL_INTERVAL_MS));
+      }
+    } catch (err: unknown) {
+      logger.error({ err }, 'Error during claimNextJob polling');
+      await new Promise((r) => setTimeout(r, 5000));
+    }
+  }
 
-export function stopWorkerLoop(): void {
+  logger.info('Worker loop cleanly stopped');
   isRunning = false;
 }
 
+export async function stopWorker(): Promise<void> {
+  shouldStop = true;
+  logger.info('Stopping worker; awaiting active jobs...');
+  while (activeJobCount > 0) {
+    await new Promise((r) => setTimeout(r, 500));
+  }
+  logger.info('All active worker jobs completed or released');
+}

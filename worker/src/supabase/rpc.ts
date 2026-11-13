@@ -60,13 +60,13 @@ export async function claimNextJob(vtSeconds = 600): Promise<ClaimedJob | null> 
 
 export async function heartbeatJob(
   jobId: string,
-  progress: number,
-  currentStep: string
+  progress?: number,
+  currentStep?: string
 ): Promise<boolean> {
   const { data, error } = await supabaseAdmin.rpc('heartbeat_job', {
     p_job_id: jobId,
-    p_progress: progress,
-    p_current_step: currentStep,
+    p_progress: progress ?? null,
+    p_current_step: currentStep ?? null,
   });
 
   if (error) {

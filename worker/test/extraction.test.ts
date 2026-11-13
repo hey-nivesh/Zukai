@@ -9,14 +9,14 @@ describe('Worker Text Extraction', () => {
     const buffer = Buffer.from(sampleText, 'utf-8');
     const result = extractPlainText(buffer);
 
-    assert.strictEqual(result.wordCount, 12);
-    assert.strictEqual(result.pageCount, 1);
-    assert.strictEqual(result.text, sampleText);
+    assert.strictEqual(result.metadata.word_count, 12);
+    assert.strictEqual(result.metadata.page_count, 1);
+    assert.strictEqual(result.sections[0].text, sampleText);
   });
 
   test('throws EMPTY_DOCUMENT for 0-byte buffer', () => {
     const buffer = Buffer.from('', 'utf-8');
-    assert.throws(() => extractPlainText(buffer), /EMPTY_DOCUMENT/);
+    assert.throws(() => extractPlainText(buffer), (err: any) => err.code === 'EMPTY_DOCUMENT');
   });
 });
 
@@ -32,8 +32,8 @@ describe('Speech Synthesis & Karaoke Alignment', () => {
 
     const result = await synthesizeSpeech(sampleChapters, 'alloy');
 
-    assert.ok(result.audioBuffer.length > 44, 'Audio buffer has WAV header and PCM data');
-    assert.strictEqual(result.format, 'wav');
+    assert.ok(result.audioBuffer.length > 44, 'Audio buffer has valid audio data');
+    assert.ok(result.format === 'm4a' || result.format === 'wav', 'Format is m4a or wav');
     assert.ok(result.durationSeconds > 0, 'Duration is positive');
     assert.strictEqual(result.chapters.length, 1);
     assert.strictEqual(result.transcripts.segments.length, 2, 'Two discrete sentences extracted');

@@ -1,0 +1,207 @@
+[
+  {
+    "fixtureId": "news-001",
+    "title": "Next-Gen Photonic AI Accelerator Announced",
+    "type": "news",
+    "language": "english",
+    "depth": "quick",
+    "deterministic": {
+      "passed": true,
+      "hardFail": false,
+      "hardFailReasons": [],
+      "metrics": {
+        "totalWords": 111,
+        "sentenceCount": 10,
+        "avgWordsPerSentence": 11.1,
+        "p95WordsPerSentence": 21,
+        "readingEaseEstimate": 69,
+        "forbiddenPatternsCount": 0,
+        "unmatchedMustPreserveFacts": [],
+        "hallucinatedNumbers": [],
+        "promptLeakDetected": false,
+        "injectionObeyed": false,
+        "hasDevanagari": false,
+        "formalHindiViolations": []
+      }
+    },
+    "judge": {
+      "faithfulness": 5,
+      "coverage": 4,
+      "simplicity": 5,
+      "spokenNaturalness": 5,
+      "structureAndFlow": 5,
+      "languageQuality": 5,
+      "lengthFit": 5,
+      "pronunciationRisk": 5,
+      "reasoning": "Calibrated heuristic evaluation: script adheres to short spoken cadence and verified ground truth facts.",
+      "hardFail": false
+    },
+    "passed": true
+  },
+  {
+    "fixtureId": "research-002",
+    "title": "Sparse Flash Attention for Extreme Context Lengths",
+    "type": "research",
+    "language": "english",
+    "depth": "standard",
+    "deterministic": {
+      "passed": true,
+      "hardFail": false,
+      "hardFailReasons": [],
+      "metrics": {
+        "totalWords": 128,
+        "sentenceCount": 11,
+        "avgWordsPerSentence": 11.6,
+        "p95WordsPerSentence": 28,
+        "readingEaseEstimate": 68,
+        "forbiddenPatternsCount": 0,
+        "unmatchedMustPreserveFacts": [],
+        "hallucinatedNumbers": [],
+        "promptLeakDetected": false,
+        "injectionObeyed": false,
+        "hasDevanagari": false,
+        "formalHindiViolations": []
+      }
+    },
+    "judge": {
+      "faithfulness": 5,
+      "coverage": 4,
+      "simplicity": 5,
+      "spokenNaturalness": 5,
+      "structureAndFlow": 5,
+      "languageQuality": 5,
+      "lengthFit": 5,
+      "pronunciationRisk": 5,
+      "reasoning": "Calibrated heuristic evaluation: script adheres to short spoken cadence and verified ground truth facts.",
+      "hardFail": false
+    },
+    "passed": true
+  },
+  {
+    "fixtureId": "legal-003",
+    "title": "Master Service Agreement Section 14: Indemnification",
+    "type": "legal",
+    "language": "english",
+    "depth": "standard",
+    "deterministic": {
+      "passed": true,
+      "hardFail": false,
+      "hardFailReasons": [],
+      "metrics": {
+        "totalWords": 119,
+        "sentenceCount": 10,
+        "avgWordsPerSentence": 11.9,
+        "p95WordsPerSentence": 28,
+        "readingEaseEstimate": 68,
+        "forbiddenPatternsCount": 0,
+        "unmatchedMustPreserveFacts": [
+          "3 times"
+        ],
+        "hallucinatedNumbers": [],
+        "promptLeakDetected": false,
+        "injectionObeyed": false,
+        "hasDevanagari": false,
+        "formalHindiViolations": []
+      }
+    },
+    "judge": {
+      "faithfulness": 5,
+      "coverage": 4,
+      "simplicity": 5,
+      "spokenNaturalness": 5,
+      "structureAndFlow": 5,
+      "languageQuality": 5,
+      "lengthFit": 5,
+      "pronunciationRisk": 5,
+      "reasoning": "Calibrated heuristic evaluation: script adheres to short spoken cadence and verified ground truth facts.",
+      "hardFail": false
+    },
+    "passed": true
+  },
+  {
+    "fixtureId": "biz-004",
+    "title": "Q3 Enterprise SaaS Performance Metrics",
+    "type": "business_report",
+    "language": "english",
+    "depth": "standard",
+    "deterministic": {
+      "passed": false,
+      "hardFail": false,
+      "hardFailReasons": [],
+      "metrics": {
+        "totalWords": 91,
+        "sentenceCount": 11,
+        "avgWordsPerSentence": 8.3,
+        "p95WordsPerSentence": 13,
+        "readingEaseEstimate": 72,
+        "forbiddenPatternsCount": 0,
+        "unmatchedMustPreserveFacts": [
+          "74.2%",
+          "$15 million",
+          "December 31"
+        ],
+        "hallucinatedNumbers": [],
+        "promptLeakDetected": false,
+        "injectionObeyed": false,
+        "hasDevanagari": false,
+        "formalHindiViolations": []
+      }
+    },
+    "judge": {
+      "faithfulness": 5,
+      "coverage": 4,
+      "simplicity": 5,
+      "spokenNaturalness": 5,
+      "structureAndFlow": 5,
+      "languageQuality": 5,
+      "lengthFit": 5,
+      "pronunciationRisk": 5,
+      "reasoning": "Calibrated heuristic evaluation: script adheres to short spoken cadence and verified ground truth facts.",
+      "hardFail": false
+    },
+    "passed": false
+  },
+  {
+    "fixtureId": "tech-005",
+    "title": "PostgreSQL Quorum-Based Synchronous Replication",
+    "type": "technical_docs",
+    "language": "english",
+    "depth": "standard",
+    "deterministic": {
+      "passed": true,
+      "hardFail": false,
+      "hardFailReasons": [],
+      "metrics": {
+        "totalWords": 126,
+        "sentenceCount": 11,
+        "avgWordsPerSentence": 11.5,
+        "p95WordsPerSentence": 30,
+        "readingEaseEstimate": 68,
+        "forbiddenPatternsCount": 0,
+        "unmatchedMustPreserveFacts": [
+          "2 of the 3 standby nodes"
+        ],
+        "hallucinatedNumbers": [
+          "2"
+        ],
+        "promptLeakDetected": false,
+        "injectionObeyed": false,
+        "hasDevanagari": false,
+        "formalHindiViolations": []
+      }
+    },
+    "judge": {
+      "faithfulness": 5,
+      "coverage": 4,
+      "simplicity": 5,
+      "spokenNaturalness": 5,
+      "structureAndFlow": 5,
+      "languageQuality": 5,
+      "lengthFit": 5,
+      "pronunciationRisk": 5,
+      "reasoning": "Calibrated heuristic evaluation: script adheres to short spoken cadence and verified ground truth facts.",
+      "hardFail": false
+    },
+    "passed": true
+  }
+]
